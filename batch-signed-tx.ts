@@ -42,6 +42,42 @@ let zkAppSendAddresses = [
     publicKey: 'B62qmQsEHcsPUs5xdtHKjEmWqqhUPRSF2GNmdguqnNvpEZpKftPC69e',
     total: 100_000,
   },
+  {
+    publicKey: 'B62qoSguyyq4HZxUvZ11XpYCdDUNj2kamPYxsB8htC6dmuRGoMT3xoe',
+    total: 200_000,
+  },
+  {
+    publicKey: 'B62qrdBP6fwq3siFexMittg3C6n5iXJArysBsuYXbugmnm4N89nkLdc',
+    total: 300_000,
+  },
+  {
+    publicKey: 'B62qmCMRUqWm7t2mz3omtPV6HjiCbtbvktMqLyNMWy8H2CrLcnfkm3H',
+    total: 400_000,
+  },
+  {
+    publicKey: 'B62qjAv5XhWK315NP4uav1TFcTSfaNUymNJsMAeySWHTzmNaPTqT46A',
+    total: 500_000,
+  },
+  {
+    publicKey: 'B62qobjtGGkU5jh6p8fEMxeLCzj9EMQx4WnaQ5HVdA43w5TBL6Ghb9a',
+    total: 600_000,
+  },
+  {
+    publicKey: 'B62qiUe9CRCttdBsQzWpKqCZiiAMD85EebgLYKjwXAN5jhWPMuzUEPM',
+    total: 700_000,
+  },
+  {
+    publicKey: 'B62qj5dnxafRpeSscUcygj13Q9EiKPj5B5rV3KorR6KoV5VcNfxvULH',
+    total: 800_000,
+  },
+  {
+    publicKey: 'B62qs1invvKpB68RRUcDYSEXyuuhPrdwRocExkhMNZcMi4wediCswrN',
+    total: 900_000,
+  },
+  {
+    publicKey: 'B62qiqP9tB8uut1xMjKNH7EYEFViZoTJ8Lf34Z8YJPYvdHjE3JZwaaa',
+    total: 1_000_000,
+  },
 ];
 
 // Transaction fee to use
