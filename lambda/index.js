@@ -1,4 +1,8 @@
 "use strict";
+// This API returns data for the Foundation delegation program
+// Using this API in a zkApp you can prove (using MinaExplorer data) that a delegating key
+// received the rewards for the stated epoch
+// Takes as input the delegating key and the epoch in question
 var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
@@ -53,10 +57,15 @@ var query2 = (0, graphql_request_1.gql)(templateObject_2 || (templateObject_2 = 
 // This query gets the number of blocks won by the producer
 var query3 = (0, graphql_request_1.gql)(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\nquery blocksWon {\n  blocks(query: {transactions: {coinbase_ne: \"0\"}, protocolState: {consensusState: {epoch: 38}}, canonical: true, creator: \"B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM\"}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {\n    blockHeight\n  }\n}\n"], ["\nquery blocksWon {\n  blocks(query: {transactions: {coinbase_ne: \"0\"}, protocolState: {consensusState: {epoch: 38}}, canonical: true, creator: \"B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM\"}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {\n    blockHeight\n  }\n}\n"
     // This query gets the total amount received to an address between slot numbers
+    // Slot numbers are slow so we get the block heights
 ])));
 // This query gets the total amount received to an address between slot numbers
+// Slot numbers are slow so we get the block heights
+var query4 = (0, graphql_request_1.gql)(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {\n    blockHeight\n  }\n}\n"])));
+var query5 = (0, graphql_request_1.gql)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"])));
+var query6 = (0, graphql_request_1.gql)(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\nquery receivedAmounts {\n  transactions(query: {to: \"B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb\", canonical: true, blockHeight_gte: 186406, blockHeight_lte: 191216}) {\n    amount\n  }\n}\n"], ["\nquery receivedAmounts {\n  transactions(query: {to: \"B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb\", canonical: true, blockHeight_gte: 186406, blockHeight_lte: 191216}) {\n    amount\n  }\n}\n"])));
 exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var privateKey, signingKey, balanceData, delegatedBalanceData, blocksWonData, payout, epoch, totalDelegatedBalance, publicKey, delegateKey, blocksWon, delegatedBalance, amountOwed, amountSent, data1, signature, data, response;
+    var privateKey, signingKey, balanceData, delegatedBalanceData, blocksWonData, payout, minBlockHeight, maxBlockHeight, receivedAmounts, sum, lowerHeight, upperHeight, epoch, totalDelegatedBalance, publicKey, delegateKey, blocksWon, delegatedBalance, amountOwed, amountSent, data1, signature, data, response;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: 
@@ -75,36 +84,55 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
             case 2:
                 balanceData = _a.sent();
                 return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query2).then(function (data) {
-                        console.log(data);
                         return data.stake.delegationTotals.totalDelegated;
                     })];
             case 3:
                 delegatedBalanceData = _a.sent();
                 return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query3).then(function (data) {
-                        console.log(data);
                         return data.blocks.length;
                     })];
             case 4:
                 blocksWonData = _a.sent();
                 payout = Math.floor(0.95 * 720 * (balanceData / delegatedBalanceData) * blocksWonData * 100000) / 100000;
-                console.log(payout);
-                console.log(balanceData);
-                console.log(delegatedBalanceData);
-                console.log(blocksWonData);
-                epoch = snarkyjs_1.UInt32.fromNumber(200);
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query4).then(function (data) {
+                        return data.blocks[0].blockHeight;
+                    })];
+            case 5:
+                minBlockHeight = _a.sent();
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query5).then(function (data) {
+                        return data.blocks[0].blockHeight;
+                    })];
+            case 6:
+                maxBlockHeight = _a.sent();
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query6).then(function (data) {
+                        return data.transactions;
+                    })];
+            case 7:
+                receivedAmounts = _a.sent();
+                sum = receivedAmounts.reduce(function (sum, current) { return sum + current.amount; }, 0);
+                lowerHeight = minBlockHeight;
+                upperHeight = maxBlockHeight;
+                console.log(sum);
+                //console.log(payout);
+                //console.log(balanceData);
+                //console.log(delegatedBalanceData);
+                //console.log(blocksWonData);
+                console.log(lowerHeight);
+                console.log(upperHeight);
+                epoch = snarkyjs_1.UInt32.fromNumber(38);
                 totalDelegatedBalance = snarkyjs_1.UInt64.fromNumber(delegatedBalanceData * 1000000000);
                 publicKey = snarkyjs_1.PublicKey.fromBase58("B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb");
                 delegateKey = snarkyjs_1.PublicKey.fromBase58("B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM");
                 blocksWon = snarkyjs_1.UInt32.fromNumber(blocksWonData);
                 delegatedBalance = snarkyjs_1.UInt64.fromNumber(balanceData * 1000000000);
-                amountOwed = snarkyjs_1.UInt64.fromNumber(338921504);
-                amountSent = snarkyjs_1.UInt64.fromNumber(338921504);
+                amountOwed = snarkyjs_1.UInt64.fromNumber(payout * 1000000000);
+                amountSent = snarkyjs_1.UInt64.fromNumber(sum);
                 data1 = epoch.toFields().concat(publicKey.toFields()).concat(delegateKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
                 signature = snarkyjs_1.Signature.create(privateKey, data1);
                 data = {
                     data: {
                         "epoch": epoch,
-                        "publicKey": publicKey,
+                        "blockProducer": publicKey,
                         "delegateKey": delegateKey,
                         "blocksWon": blocksWon,
                         "delegatedBalance": delegatedBalance,
@@ -115,13 +143,13 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
                     signature: signature,
                     publicKey: publicKey
                 };
-                console.log(data);
                 response = {
                     statusCode: 200,
                     body: JSON.stringify(data)
                 };
+                console.log(response);
                 return [2 /*return*/, response];
         }
     });
 }); };
-var templateObject_1, templateObject_2, templateObject_3;
+var templateObject_1, templateObject_2, templateObject_3, templateObject_4, templateObject_5, templateObject_6;
