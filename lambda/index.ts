@@ -83,6 +83,13 @@ exports.handler = async (event) => {
     publicKey: PublicKey
   };
 
+  // Epoch data from the event, for now it's 38
+  const epochEvent = 38;
+  let minSlotNumber = (epochEvent * 7140) + 3501;
+  let maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
+  console.log(minSlotNumber);
+  console.log(maxSlotNumber);
+
   // This is the key we use to sign our data
   const privateKey = PrivateKey.fromBase58(
     "EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53"
@@ -139,7 +146,7 @@ exports.handler = async (event) => {
   console.log(upperHeight);
 
   // Mock some fields
-  const epoch = UInt32.fromNumber(38);
+  const epoch = UInt32.fromNumber(epochEvent);
   const totalDelegatedBalance = UInt64.fromNumber(delegatedBalanceData * 1000000000);
   // This is the Foundation/O(1) Labs address
   const publicKey = PublicKey.fromBase58("B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb");
