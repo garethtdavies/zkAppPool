@@ -65,8 +65,6 @@ query receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {
 
 exports.handler = async (event) => {
 
-  // Eventually we will process the event and use it to generate the correct response for the key and epoch 
-  // but for now, we'll just mock  this data
   await isReady;
 
   // Define the type that our function (and API) will return
@@ -85,12 +83,9 @@ exports.handler = async (event) => {
     publicKey: PublicKey
   };
 
-  // Epoch data from the event, for now it's 38
-  //const eventKey = "B62qr11GnajdtFtYHLB25VfR2HisWw9gQTtswLT9UDuBDupwxnP8Qtm";
+  // get the event from Lambda URI
   const eventKey = event.queryStringParameters.publicKey;
   const epochEvent = event.queryStringParameters.epoch;
-
-  console.log(event)
   
   let minSlotNumber = (epochEvent * 7140) + 3501;
   let maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
@@ -143,13 +138,13 @@ exports.handler = async (event) => {
   // Sum all transactions received
   const sum = receivedAmounts.reduce((sum, current) => sum + current.amount, 0);
 
-  console.log(sum);
-  console.log(payout);
-  console.log(epochBalanceData);
-  console.log(delegatedBalanceData);
-  console.log(blocksWonData);
+  //console.log(sum);
+  //console.log(payout);
+  //console.log(epochBalanceData);
+  //console.log(delegatedBalanceData);
+  //console.log(blocksWonData);
 
-  // Mock some fields
+  // convert all of our data to fields
   const epoch = UInt32.fromNumber(epochEvent);
   const totalDelegatedBalance = UInt64.fromNumber(delegatedBalanceData * 1000000000);
   // This is the Foundation/O(1) Labs address
@@ -162,9 +157,9 @@ exports.handler = async (event) => {
   const amountSent = UInt64.fromNumber(sum);
 
   // Sign all the data
-  const data1 = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
+  const signedData = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
 
-  const signature = Signature.create(privateKey, data1);
+  const signature = Signature.create(privateKey, signedData);
 
   const data: Data = {
     data: {

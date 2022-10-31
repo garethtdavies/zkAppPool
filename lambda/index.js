@@ -67,20 +67,14 @@ var query4 = (0, graphql_request_1.gql)(templateObject_4 || (templateObject_4 = 
 var query5 = (0, graphql_request_1.gql)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\nquery minBlockHeight($slotMin: Int!, $slotMax: Int!) {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight($slotMin: Int!, $slotMax: Int!) {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"])));
 var query6 = (0, graphql_request_1.gql)(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\nquery receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {\n  transactions(query: {to: $pk, canonical: true, blockHeight_gte: $blockMin, blockHeight_lte: $blockMax}) {\n    amount\n  }\n}\n"], ["\nquery receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {\n  transactions(query: {to: $pk, canonical: true, blockHeight_gte: $blockMin, blockHeight_lte: $blockMax}) {\n    amount\n  }\n}\n"])));
 exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var eventKey, epochEvent, minSlotNumber, maxSlotNumber, privateKey, signingKey, balanceData, epochBalanceData, delegatingKeyData, delegatedBalanceData, blocksWonData, payout, minBlockHeight, maxBlockHeight, receivedAmounts, sum, epoch, totalDelegatedBalance, publicKey, producerKey, blocksWon, delegatedBalance, amountOwed, amountSent, data1, signature, data, response;
+    var eventKey, epochEvent, minSlotNumber, maxSlotNumber, privateKey, signingKey, balanceData, epochBalanceData, delegatingKeyData, delegatedBalanceData, blocksWonData, payout, minBlockHeight, maxBlockHeight, receivedAmounts, sum, epoch, totalDelegatedBalance, publicKey, producerKey, blocksWon, delegatedBalance, amountOwed, amountSent, signedData, signature, data, response;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: 
-            // Eventually we will process the event and use it to generate the correct response for the key and epoch 
-            // but for now, we'll just mock  this data
-            return [4 /*yield*/, snarkyjs_1.isReady];
+            case 0: return [4 /*yield*/, snarkyjs_1.isReady];
             case 1:
-                // Eventually we will process the event and use it to generate the correct response for the key and epoch 
-                // but for now, we'll just mock  this data
                 _a.sent();
                 eventKey = event.queryStringParameters.publicKey;
                 epochEvent = event.queryStringParameters.epoch;
-                console.log(event);
                 minSlotNumber = (epochEvent * 7140) + 3501;
                 maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
                 console.log(minSlotNumber);
@@ -121,11 +115,6 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
             case 7:
                 receivedAmounts = _a.sent();
                 sum = receivedAmounts.reduce(function (sum, current) { return sum + current.amount; }, 0);
-                console.log(sum);
-                console.log(payout);
-                console.log(epochBalanceData);
-                console.log(delegatedBalanceData);
-                console.log(blocksWonData);
                 epoch = snarkyjs_1.UInt32.fromNumber(epochEvent);
                 totalDelegatedBalance = snarkyjs_1.UInt64.fromNumber(delegatedBalanceData * 1000000000);
                 publicKey = snarkyjs_1.PublicKey.fromBase58(eventKey);
@@ -134,8 +123,8 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
                 delegatedBalance = snarkyjs_1.UInt64.fromNumber(epochBalanceData * 1000000000);
                 amountOwed = snarkyjs_1.UInt64.fromNumber(payout * 1000000000);
                 amountSent = snarkyjs_1.UInt64.fromNumber(sum);
-                data1 = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
-                signature = snarkyjs_1.Signature.create(privateKey, data1);
+                signedData = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
+                signature = snarkyjs_1.Signature.create(privateKey, signedData);
                 data = {
                     data: {
                         "epoch": epoch,
