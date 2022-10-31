@@ -3,6 +3,8 @@
 // Using this API in a zkApp you can prove (using MinaExplorer data) that a delegating key
 // received the rewards for the stated epoch
 // Takes as input the delegating key and the epoch in question
+// Can emit the public key, eppoch and whether or not enough payment was sent for the epoch determined by a zkApp
+// Evoke function https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38
 var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
