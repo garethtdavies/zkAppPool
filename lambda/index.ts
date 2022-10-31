@@ -2,6 +2,7 @@
 // Using this API in a zkApp you can prove (using MinaExplorer data) that a delegating key
 // received the rewards for the stated epoch
 // Takes as input the delegating key and the epoch in question
+// Can emit the public key, eppoch and whether or not enough payment was sent for the epoch determined by a zkApp
 
 import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64 } from "snarkyjs";
 import { request, gql } from 'graphql-request';
