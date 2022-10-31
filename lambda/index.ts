@@ -8,8 +8,8 @@ import { request, gql } from 'graphql-request';
 
 // This query gets the delegation balance of the key in question
 const query = gql`
-query foundationDelegation {
-  stake(query: {public_key: "B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb", epoch: 38}) {
+query foundationDelegation($pk: String!, $epoch: Int!) {
+  stake(query: {public_key: $pk, epoch: $epoch}) {
     delegate
     balance
   }
@@ -18,8 +18,8 @@ query foundationDelegation {
 
 // This query gets the total staked in the pool
 const query2 = gql`
-query totalStaked {
-  stake(query: {public_key: "B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM", epoch: 38}) {
+query totalStaked($pk: String!, $epoch: Int!) {
+  stake(query: {public_key: $pk, epoch: $epoch}) {
     delegationTotals {
       totalDelegated
     }
@@ -29,8 +29,8 @@ query totalStaked {
 
 // This query gets the number of blocks won by the producer
 const query3 = gql`
-query blocksWon {
-  blocks(query: {transactions: {coinbase_ne: "0"}, protocolState: {consensusState: {epoch: 38}}, canonical: true, creator: "B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM"}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {
+query blocksWon($pk: String!, $epoch: Int!) {
+  blocks(query: {transactions: {coinbase_ne: "0"}, protocolState: {consensusState: {epoch: $epoch}}, canonical: true, creator: $pk}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {
     blockHeight
   }
 }
@@ -39,23 +39,23 @@ query blocksWon {
 // This query gets the total amount received to an address between slot numbers
 // Slot numbers are slow so we get the block heights
 const query4 = gql`
-query minBlockHeight {
-  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {
+query minBlockHeight($slotMin: Int!, $slotMax: Int!) {
+  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {
     blockHeight
   }
 }
 `
 const query5 = gql`
-query minBlockHeight {
-  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {
+query minBlockHeight($slotMin: Int!, $slotMax: Int!) {
+  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {
     blockHeight
   }
 }
 `
 
 const query6 = gql`
-query receivedAmounts {
-  transactions(query: {to: "B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb", canonical: true, blockHeight_gte: 186406, blockHeight_lte: 191216}) {
+query receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {
+  transactions(query: {to: $pk, canonical: true, blockHeight_gte: $blockMin, blockHeight_lte: $blockMax}) {
     amount
   }
 }
@@ -71,8 +71,8 @@ exports.handler = async (event) => {
   type Data = {
     data: {
       "epoch": UInt32,
-      "blockProducer": PublicKey,
-      "delegateKey": PublicKey,
+      "publicKey": PublicKey,
+      "producerKey": PublicKey,
       "blocksWon": UInt32,
       "delegatedBalance": UInt64,
       "totalDelegatedBalance": UInt64,
@@ -84,6 +84,7 @@ exports.handler = async (event) => {
   };
 
   // Epoch data from the event, for now it's 38
+  const eventKey = "B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb";
   const epochEvent = 38;
   let minSlotNumber = (epochEvent * 7140) + 3501;
   let maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
@@ -99,74 +100,71 @@ exports.handler = async (event) => {
   const signingKey = privateKey.toPublicKey();
 
   // Get the balance data
-  const balanceData = await request('https://graphql.minaexplorer.com', query).then((data) => {
-    return data.stake.balance;
+  const balanceData = await request('https://graphql.minaexplorer.com', query, { pk: eventKey, epoch: epochEvent }).then((data) => {
+    return data.stake;
   });
 
+  const epochBalanceData = balanceData.balance;
+  const delegatingKeyData = balanceData.delegate;
+
   // Get the total delegated balance
-  const delegatedBalanceData = await request('https://graphql.minaexplorer.com', query2).then((data) => {
+  const delegatedBalanceData = await request('https://graphql.minaexplorer.com', query2, { pk: delegatingKeyData, epoch: epochEvent }).then((data) => {
     return data.stake.delegationTotals.totalDelegated;
   });
 
   // Get the total blocks won
-  const blocksWonData = await request('https://graphql.minaexplorer.com', query3).then((data) => {
+  const blocksWonData = await request('https://graphql.minaexplorer.com', query3, { pk: delegatingKeyData, epoch: epochEvent }).then((data) => {
     return data.blocks.length
   });
 
   // Determine what should be paid
   // We can round down to 5 decimal places
-  let payout = Math.floor(0.95 * 720 * (balanceData / delegatedBalanceData) * blocksWonData * 100000) / 100000;
+  let payout = Math.floor(0.95 * 720 * (epochBalanceData / delegatedBalanceData) * blocksWonData * 100000) / 100000;
 
   // Determine what was paid. Find the block heights corresponding to the slots
-  const minBlockHeight = await request('https://graphql.minaexplorer.com', query4).then((data) => {
+  const minBlockHeight = await request('https://graphql.minaexplorer.com', query4, { slotMin: minSlotNumber, slotMax: maxSlotNumber }).then((data) => {
     return data.blocks[0].blockHeight;
   });
 
-  const maxBlockHeight = await request('https://graphql.minaexplorer.com', query5).then((data) => {
+  const maxBlockHeight = await request('https://graphql.minaexplorer.com', query5, { slotMin: minSlotNumber, slotMax: maxSlotNumber }).then((data) => {
     return data.blocks[0].blockHeight;
   });
 
-  const receivedAmounts = await request('https://graphql.minaexplorer.com', query6).then((data) => {
+  const receivedAmounts = await request('https://graphql.minaexplorer.com', query6, { pk: eventKey, blockMin: minBlockHeight, blockMax: maxBlockHeight }).then((data) => {
     return data.transactions;
   });
 
   // Sum all transactions received
   const sum = receivedAmounts.reduce((sum, current) => sum + current.amount, 0);
 
-  // Determine the block heights
-  const lowerHeight = minBlockHeight;
-  const upperHeight = maxBlockHeight;
-
   console.log(sum);
   console.log(payout);
-  console.log(balanceData);
+  console.log(epochBalanceData);
   console.log(delegatedBalanceData);
   console.log(blocksWonData);
-  console.log(lowerHeight);
-  console.log(upperHeight);
 
   // Mock some fields
   const epoch = UInt32.fromNumber(epochEvent);
   const totalDelegatedBalance = UInt64.fromNumber(delegatedBalanceData * 1000000000);
   // This is the Foundation/O(1) Labs address
-  const publicKey = PublicKey.fromBase58("B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb");
+  const publicKey = PublicKey.fromBase58(eventKey);
   // This is the block producer address
-  const delegateKey = PublicKey.fromBase58("B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM");
+  const producerKey = PublicKey.fromBase58(delegatingKeyData);
   const blocksWon = UInt32.fromNumber(blocksWonData);
-  const delegatedBalance = UInt64.fromNumber(balanceData * 1000000000);
+  const delegatedBalance = UInt64.fromNumber(epochBalanceData * 1000000000);
   const amountOwed = UInt64.fromNumber(payout * 1000000000);
   const amountSent = UInt64.fromNumber(sum);
 
   // Sign all the data
-  const data1 = epoch.toFields().concat(publicKey.toFields()).concat(delegateKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
+  const data1 = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
 
   const signature = Signature.create(privateKey, data1);
 
   const data: Data = {
     data: {
       "epoch": epoch,
-      "blockProducer": publicKey,
-      "delegateKey": delegateKey,
+      "publicKey": publicKey,
+      "producerKey": producerKey,
       "blocksWon": blocksWon,
       "delegatedBalance": delegatedBalance,
       "totalDelegatedBalance": totalDelegatedBalance,
@@ -174,7 +172,7 @@ exports.handler = async (event) => {
       "amountSent": amountSent
     },
     signature: signature,
-    publicKey: publicKey,
+    publicKey: signingKey,
   };
 
   const response = {

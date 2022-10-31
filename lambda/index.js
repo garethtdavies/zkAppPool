@@ -47,25 +47,25 @@ exports.__esModule = true;
 var snarkyjs_1 = require("snarkyjs");
 var graphql_request_1 = require("graphql-request");
 // This query gets the delegation balance of the key in question
-var query = (0, graphql_request_1.gql)(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\nquery foundationDelegation {\n  stake(query: {public_key: \"B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb\", epoch: 38}) {\n    delegate\n    balance\n  }\n}\n"], ["\nquery foundationDelegation {\n  stake(query: {public_key: \"B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb\", epoch: 38}) {\n    delegate\n    balance\n  }\n}\n"
+var query = (0, graphql_request_1.gql)(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\nquery foundationDelegation($pk: String!, $epoch: Int!) {\n  stake(query: {public_key: $pk, epoch: $epoch}) {\n    delegate\n    balance\n  }\n}\n"], ["\nquery foundationDelegation($pk: String!, $epoch: Int!) {\n  stake(query: {public_key: $pk, epoch: $epoch}) {\n    delegate\n    balance\n  }\n}\n"
     // This query gets the total staked in the pool
 ])));
 // This query gets the total staked in the pool
-var query2 = (0, graphql_request_1.gql)(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\nquery totalStaked {\n  stake(query: {public_key: \"B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM\", epoch: 38}) {\n    delegationTotals {\n      totalDelegated\n    }\n  }\n}\n"], ["\nquery totalStaked {\n  stake(query: {public_key: \"B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM\", epoch: 38}) {\n    delegationTotals {\n      totalDelegated\n    }\n  }\n}\n"
+var query2 = (0, graphql_request_1.gql)(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\nquery totalStaked($pk: String!, $epoch: Int!) {\n  stake(query: {public_key: $pk, epoch: $epoch}) {\n    delegationTotals {\n      totalDelegated\n    }\n  }\n}\n"], ["\nquery totalStaked($pk: String!, $epoch: Int!) {\n  stake(query: {public_key: $pk, epoch: $epoch}) {\n    delegationTotals {\n      totalDelegated\n    }\n  }\n}\n"
     // This query gets the number of blocks won by the producer
 ])));
 // This query gets the number of blocks won by the producer
-var query3 = (0, graphql_request_1.gql)(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\nquery blocksWon {\n  blocks(query: {transactions: {coinbase_ne: \"0\"}, protocolState: {consensusState: {epoch: 38}}, canonical: true, creator: \"B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM\"}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {\n    blockHeight\n  }\n}\n"], ["\nquery blocksWon {\n  blocks(query: {transactions: {coinbase_ne: \"0\"}, protocolState: {consensusState: {epoch: 38}}, canonical: true, creator: \"B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM\"}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {\n    blockHeight\n  }\n}\n"
+var query3 = (0, graphql_request_1.gql)(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\nquery blocksWon($pk: String!, $epoch: Int!) {\n  blocks(query: {transactions: {coinbase_ne: \"0\"}, protocolState: {consensusState: {epoch: $epoch}}, canonical: true, creator: $pk}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {\n    blockHeight\n  }\n}\n"], ["\nquery blocksWon($pk: String!, $epoch: Int!) {\n  blocks(query: {transactions: {coinbase_ne: \"0\"}, protocolState: {consensusState: {epoch: $epoch}}, canonical: true, creator: $pk}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {\n    blockHeight\n  }\n}\n"
     // This query gets the total amount received to an address between slot numbers
     // Slot numbers are slow so we get the block heights
 ])));
 // This query gets the total amount received to an address between slot numbers
 // Slot numbers are slow so we get the block heights
-var query4 = (0, graphql_request_1.gql)(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {\n    blockHeight\n  }\n}\n"])));
-var query5 = (0, graphql_request_1.gql)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: 274821, slotSinceGenesis_lte: 281960}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"])));
-var query6 = (0, graphql_request_1.gql)(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\nquery receivedAmounts {\n  transactions(query: {to: \"B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb\", canonical: true, blockHeight_gte: 186406, blockHeight_lte: 191216}) {\n    amount\n  }\n}\n"], ["\nquery receivedAmounts {\n  transactions(query: {to: \"B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb\", canonical: true, blockHeight_gte: 186406, blockHeight_lte: 191216}) {\n    amount\n  }\n}\n"])));
+var query4 = (0, graphql_request_1.gql)(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\nquery minBlockHeight($slotMin: Int!, $slotMax: Int!) {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight($slotMin: Int!, $slotMax: Int!) {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_ASC) {\n    blockHeight\n  }\n}\n"])));
+var query5 = (0, graphql_request_1.gql)(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\nquery minBlockHeight($slotMin: Int!, $slotMax: Int!) {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"], ["\nquery minBlockHeight($slotMin: Int!, $slotMax: Int!) {\n  blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {\n    blockHeight\n  }\n}\n"])));
+var query6 = (0, graphql_request_1.gql)(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\nquery receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {\n  transactions(query: {to: $pk, canonical: true, blockHeight_gte: $blockMin, blockHeight_lte: $blockMax}) {\n    amount\n  }\n}\n"], ["\nquery receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {\n  transactions(query: {to: $pk, canonical: true, blockHeight_gte: $blockMin, blockHeight_lte: $blockMax}) {\n    amount\n  }\n}\n"])));
 exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var privateKey, signingKey, balanceData, delegatedBalanceData, blocksWonData, payout, minBlockHeight, maxBlockHeight, receivedAmounts, sum, lowerHeight, upperHeight, epoch, totalDelegatedBalance, publicKey, delegateKey, blocksWon, delegatedBalance, amountOwed, amountSent, data1, signature, data, response;
+    var eventKey, epochEvent, minSlotNumber, maxSlotNumber, privateKey, signingKey, balanceData, epochBalanceData, delegatingKeyData, delegatedBalanceData, blocksWonData, payout, minBlockHeight, maxBlockHeight, receivedAmounts, sum, epoch, totalDelegatedBalance, publicKey, producerKey, blocksWon, delegatedBalance, amountOwed, amountSent, data1, signature, data, response;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: 
@@ -76,64 +76,68 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
                 // Eventually we will process the event and use it to generate the correct response for the key and epoch 
                 // but for now, we'll just mock  this data
                 _a.sent();
+                eventKey = "B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb";
+                epochEvent = 38;
+                minSlotNumber = (epochEvent * 7140) + 3501;
+                maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
+                console.log(minSlotNumber);
+                console.log(maxSlotNumber);
                 privateKey = snarkyjs_1.PrivateKey.fromBase58("EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53");
                 signingKey = privateKey.toPublicKey();
-                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query).then(function (data) {
-                        return data.stake.balance;
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query, { pk: eventKey, epoch: epochEvent }).then(function (data) {
+                        return data.stake;
                     })];
             case 2:
                 balanceData = _a.sent();
-                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query2).then(function (data) {
+                epochBalanceData = balanceData.balance;
+                delegatingKeyData = balanceData.delegate;
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query2, { pk: delegatingKeyData, epoch: epochEvent }).then(function (data) {
                         return data.stake.delegationTotals.totalDelegated;
                     })];
             case 3:
                 delegatedBalanceData = _a.sent();
-                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query3).then(function (data) {
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query3, { pk: delegatingKeyData, epoch: epochEvent }).then(function (data) {
                         return data.blocks.length;
                     })];
             case 4:
                 blocksWonData = _a.sent();
-                payout = Math.floor(0.95 * 720 * (balanceData / delegatedBalanceData) * blocksWonData * 100000) / 100000;
-                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query4).then(function (data) {
+                payout = Math.floor(0.95 * 720 * (epochBalanceData / delegatedBalanceData) * blocksWonData * 100000) / 100000;
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query4, { slotMin: minSlotNumber, slotMax: maxSlotNumber }).then(function (data) {
                         return data.blocks[0].blockHeight;
                     })];
             case 5:
                 minBlockHeight = _a.sent();
-                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query5).then(function (data) {
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query5, { slotMin: minSlotNumber, slotMax: maxSlotNumber }).then(function (data) {
                         return data.blocks[0].blockHeight;
                     })];
             case 6:
                 maxBlockHeight = _a.sent();
-                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query6).then(function (data) {
+                return [4 /*yield*/, (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query6, { pk: eventKey, blockMin: minBlockHeight, blockMax: maxBlockHeight }).then(function (data) {
                         return data.transactions;
                     })];
             case 7:
                 receivedAmounts = _a.sent();
                 sum = receivedAmounts.reduce(function (sum, current) { return sum + current.amount; }, 0);
-                lowerHeight = minBlockHeight;
-                upperHeight = maxBlockHeight;
                 console.log(sum);
-                //console.log(payout);
-                //console.log(balanceData);
-                //console.log(delegatedBalanceData);
-                //console.log(blocksWonData);
-                console.log(lowerHeight);
-                console.log(upperHeight);
-                epoch = snarkyjs_1.UInt32.fromNumber(38);
+                console.log(payout);
+                console.log(epochBalanceData);
+                console.log(delegatedBalanceData);
+                console.log(blocksWonData);
+                epoch = snarkyjs_1.UInt32.fromNumber(epochEvent);
                 totalDelegatedBalance = snarkyjs_1.UInt64.fromNumber(delegatedBalanceData * 1000000000);
-                publicKey = snarkyjs_1.PublicKey.fromBase58("B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb");
-                delegateKey = snarkyjs_1.PublicKey.fromBase58("B62qkLn4YDsHjoiRus1G2HmUKUutGbQGTVEtRT6NKaB1RRMYCN2d6JM");
+                publicKey = snarkyjs_1.PublicKey.fromBase58(eventKey);
+                producerKey = snarkyjs_1.PublicKey.fromBase58(delegatingKeyData);
                 blocksWon = snarkyjs_1.UInt32.fromNumber(blocksWonData);
-                delegatedBalance = snarkyjs_1.UInt64.fromNumber(balanceData * 1000000000);
+                delegatedBalance = snarkyjs_1.UInt64.fromNumber(epochBalanceData * 1000000000);
                 amountOwed = snarkyjs_1.UInt64.fromNumber(payout * 1000000000);
                 amountSent = snarkyjs_1.UInt64.fromNumber(sum);
-                data1 = epoch.toFields().concat(publicKey.toFields()).concat(delegateKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
+                data1 = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
                 signature = snarkyjs_1.Signature.create(privateKey, data1);
                 data = {
                     data: {
                         "epoch": epoch,
-                        "blockProducer": publicKey,
-                        "delegateKey": delegateKey,
+                        "publicKey": publicKey,
+                        "producerKey": producerKey,
                         "blocksWon": blocksWon,
                         "delegatedBalance": delegatedBalance,
                         "totalDelegatedBalance": totalDelegatedBalance,
@@ -141,7 +145,7 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
                         "amountSent": amountSent
                     },
                     signature: signature,
-                    publicKey: publicKey
+                    publicKey: signingKey
                 };
                 response = {
                     statusCode: 200,
