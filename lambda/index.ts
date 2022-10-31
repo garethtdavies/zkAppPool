@@ -84,14 +84,18 @@ exports.handler = async (event) => {
   };
 
   // Epoch data from the event, for now it's 38
-  const eventKey = "B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb";
-  const epochEvent = 38;
+  //const eventKey = "B62qr11GnajdtFtYHLB25VfR2HisWw9gQTtswLT9UDuBDupwxnP8Qtm";
+  const eventKey = event.queryStringParameters.publicKey;
+  const epochEvent = event.queryStringParameters.epoch;
+
+  console.log(event)
+  
   let minSlotNumber = (epochEvent * 7140) + 3501;
   let maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
   console.log(minSlotNumber);
   console.log(maxSlotNumber);
 
-  // This is the key we use to sign our data
+  // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
   const privateKey = PrivateKey.fromBase58(
     "EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53"
   );

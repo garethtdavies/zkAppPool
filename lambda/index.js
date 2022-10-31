@@ -76,8 +76,9 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
                 // Eventually we will process the event and use it to generate the correct response for the key and epoch 
                 // but for now, we'll just mock  this data
                 _a.sent();
-                eventKey = "B62qjWrka3sHmyX9E3LLk7DYwTkD3xpVxJVWeC1jWesvUCw98jzwLEb";
-                epochEvent = 38;
+                eventKey = event.queryStringParameters.publicKey;
+                epochEvent = event.queryStringParameters.epoch;
+                console.log(event);
                 minSlotNumber = (epochEvent * 7140) + 3501;
                 maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
                 console.log(minSlotNumber);
