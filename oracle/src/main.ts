@@ -36,7 +36,7 @@ import {
 
   // Not sure I need this...
   console.log('Compiling smart contract...');
-  let { verificationKey } = await DelegationOracle.compile();
+  await DelegationOracle.compile();
   
   // Get the public key and epoch we want to create a proof for via the command line
   const publicKeyInput = process.argv[2];
@@ -82,8 +82,8 @@ import {
     }
   );
 
-  await transaction.prove();
-  await transaction.send().wait();
+  //await transaction.prove();
+  //await transaction.send().wait();
   
   // ----------------------------------------------------
   console.log('Shutting down');
