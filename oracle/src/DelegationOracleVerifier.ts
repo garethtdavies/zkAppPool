@@ -29,7 +29,6 @@ export class DelegationOracle extends SmartContract {
       ...Permissions.default(),
       editState: Permissions.proofOrSignature(),
     });
-    this.init();
   }
 
   @method init() {
