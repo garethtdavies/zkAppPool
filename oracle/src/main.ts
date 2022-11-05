@@ -31,7 +31,7 @@ import {
   );
   // ----------------------------------------------------
 
-  const zkAppAddress = PublicKey.fromBase58("B62qqRJH4TaXxDeyL5yXUafzAmtBcJ53pvDGgXiyKvqgkikcP38SjFs");
+  const zkAppAddress = PublicKey.fromBase58("B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM");
   const zkAppInstance = new DelegationOracle(zkAppAddress);
 
   // Not sure I need this...
