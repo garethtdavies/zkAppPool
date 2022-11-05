@@ -33,6 +33,10 @@ import {
 
   const zkAppAddress = PublicKey.fromBase58("B62qqRJH4TaXxDeyL5yXUafzAmtBcJ53pvDGgXiyKvqgkikcP38SjFs");
   const zkAppInstance = new DelegationOracle(zkAppAddress);
+
+  // Not sure I need this...
+  console.log('Compiling smart contract...');
+  let { verificationKey } = await DelegationOracle.compile();
   
   // Get the public key and epoch we want to create a proof for via the command line
   const publicKeyInput = process.argv[2];
@@ -75,10 +79,11 @@ import {
         amountSent,
         signature ?? fail('something is wrong with the signature')
       );
-      // Don't sign...
-      zkAppInstance.sign(feePayerPrivateKey);
     }
   );
+
+  await transaction.prove();
+  await transaction.send().wait();
   
   // ----------------------------------------------------
   console.log('Shutting down');
