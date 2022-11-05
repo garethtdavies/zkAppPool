@@ -1,3 +1,3 @@
-import { CreditScoreOracle } from './CreditScoreVerifier.js';
+import { DelegationOracle } from './DelegationOracleVerifier.js';
 
-export { CreditScoreOracle };
+export { DelegationOracle };

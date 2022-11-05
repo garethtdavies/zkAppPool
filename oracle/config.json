@@ -1,4 +1,16 @@
 {
   "version": 1,
-  "networks": {}
+  "networks": {
+    "berkeley": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/berkeley.json",
+      "fee": "0.1",
+      "smartContract": "DelegationOracle"
+    },
+    "oracle": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/oracle.json",
+      "fee": "0.1"
+    }
+  }
 }

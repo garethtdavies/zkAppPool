@@ -1,4 +1,4 @@
-import { CreditScoreOracle } from './CreditScoreVerifier';
+import { DelegationOracle } from './DelegationOracleVerifier';
 import {
   isReady,
   shutdown,
@@ -26,7 +26,7 @@ function createLocalBlockchain() {
 }
 
 async function localDeploy(
-  zkAppInstance: CreditScoreOracle,
+  zkAppInstance: DelegationOracle,
   zkAppPrivatekey: PrivateKey,
   deployerAccount: PrivateKey
 ) {
@@ -39,7 +39,7 @@ async function localDeploy(
   await txn.send().wait();
 }
 
-describe('CreditScoreOracle', () => {
+describe('DelegationOracle', () => {
   let deployerAccount: PrivateKey,
     zkAppAddress: PublicKey,
     zkAppPrivateKey: PrivateKey;
@@ -58,8 +58,8 @@ describe('CreditScoreOracle', () => {
     setTimeout(shutdown, 0);
   });
 
-  it('generates and deploys the `CreditScoreOracle` smart contract', async () => {
-    const zkAppInstance = new CreditScoreOracle(zkAppAddress);
+  it('generates and deploys the `DelegationOracle` smart contract', async () => {
+    const zkAppInstance = new DelegationOracle(zkAppAddress);
     await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
     const oraclePublicKey = zkAppInstance.oraclePublicKey.get();
     expect(oraclePublicKey).toEqual(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
@@ -67,7 +67,7 @@ describe('CreditScoreOracle', () => {
 
   describe('actual API requests', () => {
     it('emits an `id` event containing the users id if their credit score is above 700 and the provided signature is valid', async () => {
-      const zkAppInstance = new CreditScoreOracle(zkAppAddress);
+      const zkAppInstance = new DelegationOracle(zkAppAddress);
       await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
 
       const response = await fetch(

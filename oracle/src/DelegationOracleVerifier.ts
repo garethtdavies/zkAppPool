@@ -1,3 +1,5 @@
+/* This smart contract takes in an oracle source */
+
 import {
   Field,
   SmartContract,
@@ -16,7 +18,7 @@ import {
 const ORACLE_PUBLIC_KEY =
   'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
 
-export class CreditScoreOracle extends SmartContract {
+export class DelegationOracle extends SmartContract {
   @state(PublicKey) oraclePublicKey = State<PublicKey>();
 
   // Define contract events
@@ -37,9 +39,11 @@ export class CreditScoreOracle extends SmartContract {
   // Define contract events
   events = {
     verified: PublicKey,
+    producerKey: PublicKey,
     epoch: UInt32
   };
 
+  // This method verifies that the amount received is greater than the amount owed and if so will emit an event
   @method verify(epoch: UInt32, publicKey: PublicKey, producerKey: PublicKey, blocksWon: UInt32, delegatedBalance: UInt64, totalDelegatedBalance: UInt64, amountOwed: UInt64, amountSent: UInt64, signature: Signature) {
 
     const oraclePublicKey = this.oraclePublicKey.get();
@@ -58,6 +62,7 @@ export class CreditScoreOracle extends SmartContract {
 
     // Emit an event containing the verified users id
     this.emitEvent('verified', publicKey);
+    this.emitEvent('producerKey', publicKey);
     this.emitEvent('epoch', epoch);
   }
 }
