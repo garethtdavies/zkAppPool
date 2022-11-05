@@ -1,3 +1,3 @@
-import { CreditScoreVerifier } from './CreditScoreVerifier.js';
+import { CreditScoreOracle } from './CreditScoreVerifier.js';
 
-export { CreditScoreVerifier };
+export { CreditScoreOracle };
