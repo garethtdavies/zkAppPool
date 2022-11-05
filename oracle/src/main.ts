@@ -18,7 +18,7 @@ import {
   await isReady;
 
   console.log('SnarkyJS loaded');
-  
+
   // Connect to Berkeley
   const Berkeley = Mina.BerkeleyQANet(
     'https://proxy.berkeley.minaexplorer.com/graphql'
@@ -37,7 +37,7 @@ import {
   // Not sure I need this...
   console.log('Compiling smart contract...');
   await DelegationOracle.compile();
-  
+
   // Get the public key and epoch we want to create a proof for via the command line
   const publicKeyInput = process.argv[2];
   const epochInput = process.argv[3];
@@ -68,25 +68,16 @@ import {
   let transaction = await Mina.transaction(
     { feePayerKey: feePayerPrivateKey, fee: transactionFee },
     () => {
-      zkAppInstance.verify(
-        epoch,
-        publicKey,
-        producerKey,
-        blocksWon,
-        delegatedBalance,
-        totalDelegatedBalance,
-        amountOwed,
-        amountSent,
-        signature ?? fail('something is wrong with the signature')
-      );
+      //zkAppInstance.init();
+      zkAppInstance.verify(epoch, publicKey, producerKey, blocksWon, delegatedBalance, totalDelegatedBalance, amountOwed, amountSent, signature);
     }
   );
 
-  //await transaction.prove();
-  //await transaction.send().wait();
-  
+  await transaction.prove();
+  await transaction.send().wait();
+
   // ----------------------------------------------------
   console.log('Shutting down');
-  
+
   await shutdown();
 })();
