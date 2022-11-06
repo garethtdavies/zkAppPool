@@ -21,8 +21,6 @@ const ORACLE_PUBLIC_KEY =
 export class DelegationOracle extends SmartContract {
   @state(PublicKey) oraclePublicKey = State<PublicKey>();
 
-  // Define contract events
-
   deploy(args: DeployArgs) {
     super.deploy(args);
     this.setPermissions({
