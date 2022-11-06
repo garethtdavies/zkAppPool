@@ -46,8 +46,12 @@ export class DelegationOracle extends SmartContract {
   // This method verifies that the amount received is greater than the amount owed and if so will emit an event
   @method verify(epoch: UInt32, publicKey: PublicKey, producerKey: PublicKey, blocksWon: UInt32, delegatedBalance: UInt64, totalDelegatedBalance: UInt64, amountOwed: UInt64, amountSent: UInt64, signature: Signature) {
 
-    const oraclePublicKey = this.oraclePublicKey.get();
+    let oraclePublicKey = this.oraclePublicKey.get();
     this.oraclePublicKey.assertEquals(oraclePublicKey);
+
+    // Hack
+    oraclePublicKey = PublicKey.fromBase58("B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1");
+
 
     // Evaluate whether the signature is valid for the provided data
     const signedData = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());

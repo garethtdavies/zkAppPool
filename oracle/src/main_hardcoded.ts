@@ -12,6 +12,7 @@ import {
   UInt64,
   Signature,
 } from 'snarkyjs';
+import { transaction } from 'snarkyjs/dist/node/lib/mina.js';
 
 (async function main() {
 
