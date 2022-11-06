@@ -48,7 +48,7 @@ query minBlockHeight($slotMin: Int!, $slotMax: Int!) {
 }
 `
 const query5 = gql`
-query minBlockHeight($slotMin: Int!, $slotMax: Int!) {
+query maxBlockHeight($slotMin: Int!, $slotMax: Int!) {
   blocks(query: {canonical: true, protocolState: {consensusState: {slotSinceGenesis_gte: $slotMin, slotSinceGenesis_lte: $slotMax}}}, limit: 1, sortBy: BLOCKHEIGHT_DESC) {
     blockHeight
   }
