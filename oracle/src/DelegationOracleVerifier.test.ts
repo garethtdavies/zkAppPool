@@ -52,9 +52,6 @@ describe('DelegationOracle', () => {
   });
 
   afterAll(async () => {
-    // `shutdown()` internally calls `process.exit()` which will exit the running Jest process early.
-    // Specifying a timeout of 0 is a workaround to defer `shutdown()` until Jest is done running all tests.
-    // This should be fixed with https://github.com/MinaProtocol/mina/issues/10943
     setTimeout(shutdown, 0);
   });
 
@@ -66,7 +63,7 @@ describe('DelegationOracle', () => {
   });
 
   describe('actual API requests', () => {
-    it('emits an `id` event containing the users id if their credit score is above 700 and the provided signature is valid', async () => {
+    it('emits an event that the amount paid is valid', async () => {
       const zkAppInstance = new DelegationOracle(zkAppAddress);
       await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
 
@@ -74,8 +71,6 @@ describe('DelegationOracle', () => {
         'https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38'
       );
       const data = await response.json();
-
-      console.log(data);
 
       const epoch = UInt32.fromNumber(data.data.epoch);
       const publicKey = PublicKey.fromBase58(data.data.publicKey);
@@ -103,9 +98,88 @@ describe('DelegationOracle', () => {
       });
       await txn.send().wait();
 
+      // Test against these emitted after got it working
       const events = await zkAppInstance.fetchEvents();
-      const verifiedEventValue = events[0].event.toFields(null)[0];
-      //expect(verifiedEventValue).toEqual(epoch);
+    });
+  });
+
+  describe('hardcoded values', () => {
+    it('emits event if everythiong is valid', async () => {
+      const zkAppInstance = new DelegationOracle(zkAppAddress);
+      await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
+
+      const epoch = UInt32.fromNumber(38);
+      const publicKey = PublicKey.fromBase58("B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz");
+      const producerKey = PublicKey.fromBase58("B62qpLST3UC1rpVT6SHfB7wqW2iQgiopFAGfrcovPgLjgfpDUN2LLeg");
+      const blocksWon = UInt32.fromNumber(9);
+      const delegatedBalance = UInt64.fromNumber(951659889077537);
+      const totalDelegatedBalance = UInt64.fromNumber(951659889077537);
+      const amountOwed = UInt64.fromNumber(6156000000000);
+      const amountSent = UInt64.fromNumber(17784000000000);
+      const signature = Signature.fromJSON({
+        r: '4585336111649222276312617544050671811572206187060030835626544623230564871660',
+        s: '23705120429500629446892768253494096656563972492453883998435780307943658192079'
+      });
+
+      const txn = await Mina.transaction(deployerAccount, () => {
+        zkAppInstance.verify(
+          epoch,
+          publicKey,
+          producerKey,
+          blocksWon,
+          delegatedBalance,
+          totalDelegatedBalance,
+          amountOwed,
+          amountSent,
+          signature ?? fail('something is wrong with the signature')
+        );
+        zkAppInstance.sign(zkAppPrivateKey);
+      });
+      await txn.send().wait();
+
+      // Test events after we have this working
+      const events = await zkAppInstance.fetchEvents();
+    });
+  });
+
+  describe('hardcoded values with a proof', () => {
+    it('emits event if everythiong is valid', async () => {
+      const zkAppInstance = new DelegationOracle(zkAppAddress);
+      await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
+
+      console.log("Compiling")
+      await DelegationOracle.compile();
+
+      const epoch = UInt32.fromNumber(38);
+      const publicKey = PublicKey.fromBase58("B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz");
+      const producerKey = PublicKey.fromBase58("B62qpLST3UC1rpVT6SHfB7wqW2iQgiopFAGfrcovPgLjgfpDUN2LLeg");
+      const blocksWon = UInt32.fromNumber(9);
+      const delegatedBalance = UInt64.fromNumber(951659889077537);
+      const totalDelegatedBalance = UInt64.fromNumber(951659889077537);
+      const amountOwed = UInt64.fromNumber(6156000000000);
+      const amountSent = UInt64.fromNumber(17784000000000);
+      const signature = Signature.fromJSON({
+        r: '4585336111649222276312617544050671811572206187060030835626544623230564871660',
+        s: '23705120429500629446892768253494096656563972492453883998435780307943658192079'
+      });
+
+      const txn = await Mina.transaction(deployerAccount, () => {
+        zkAppInstance.verify(
+          epoch,
+          publicKey,
+          producerKey,
+          blocksWon,
+          delegatedBalance,
+          totalDelegatedBalance,
+          amountOwed,
+          amountSent,
+          signature ?? fail('something is wrong with the signature')
+        );
+      });
+      txn.prove();
+      await txn.send().wait();
+
+      const events = await zkAppInstance.fetchEvents();
       console.log(events);
     });
   });
