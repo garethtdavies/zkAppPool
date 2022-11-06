@@ -49,7 +49,7 @@ export class DelegationOracle extends SmartContract {
     let oraclePublicKey = this.oraclePublicKey.get();
     this.oraclePublicKey.assertEquals(oraclePublicKey);
 
-    // Hack
+    // Hack - need to understand why this doesn't work as is but works like this
     oraclePublicKey = PublicKey.fromBase58("B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1");
 
 
