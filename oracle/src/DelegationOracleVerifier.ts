@@ -43,7 +43,7 @@ export class DelegationOracle extends SmartContract {
     epoch: UInt32
   };
 
-  // This method verifies that the amount received is greater than the amount owed and if so will emit an event
+  // This method verifies that the amount received by the delegating key is greater than the amount owed and if so will emit an event that can be read on-chain
   @method verify(epoch: UInt32, publicKey: PublicKey, producerKey: PublicKey, blocksWon: UInt32, delegatedBalance: UInt64, totalDelegatedBalance: UInt64, amountOwed: UInt64, amountSent: UInt64, signature: Signature) {
 
     let oraclePublicKey = this.oraclePublicKey.get();
@@ -51,7 +51,6 @@ export class DelegationOracle extends SmartContract {
 
     // Hack - need to understand why this doesn't work as is but works like this. Otherwise error is https://gist.github.com/garethtdavies/b5deadda86f1fd4a3b5b9efb13a0284e
     oraclePublicKey = PublicKey.fromBase58("B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1");
-
 
     // Evaluate whether the signature is valid for the provided data
     const signedData = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
