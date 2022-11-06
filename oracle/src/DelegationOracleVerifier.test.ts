@@ -176,7 +176,7 @@ describe('DelegationOracle', () => {
           signature ?? fail('something is wrong with the signature')
         );
       });
-      txn.prove();
+      await txn.prove();
       await txn.send().wait();
 
       const events = await zkAppInstance.fetchEvents();

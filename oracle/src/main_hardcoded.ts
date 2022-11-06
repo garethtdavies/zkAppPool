@@ -34,7 +34,6 @@ import {
   const zkAppAddress = PublicKey.fromBase58("B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM");
   const zkAppInstance = new DelegationOracle(zkAppAddress);
 
-  // Not sure I need this...
   console.log('Compiling smart contract...');
   await DelegationOracle.compile();
 
@@ -53,15 +52,20 @@ import {
 
   console.log(data);
 
-  const epoch = UInt32.fromNumber(data.data.epoch);
-  const publicKey = PublicKey.fromBase58(data.data.publicKey);
-  const producerKey = PublicKey.fromBase58(data.data.producerKey);
-  const blocksWon = UInt32.fromNumber(data.data.blocksWon);
-  const delegatedBalance = UInt64.fromNumber(data.data.delegatedBalance);
-  const totalDelegatedBalance = UInt64.fromNumber(data.data.totalDelegatedBalance);
-  const amountOwed = UInt64.fromNumber(data.data.amountOwed);
-  const amountSent = UInt64.fromNumber(data.data.amountSent);
-  const signature = Signature.fromJSON(data.signature);
+  // Hardcode the data for now as this test works...
+
+  const epoch = UInt32.fromNumber(38);
+  const publicKey = PublicKey.fromBase58("B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz");
+  const producerKey = PublicKey.fromBase58("B62qpLST3UC1rpVT6SHfB7wqW2iQgiopFAGfrcovPgLjgfpDUN2LLeg");
+  const blocksWon = UInt32.fromNumber(9);
+  const delegatedBalance = UInt64.fromNumber(951659889077537);
+  const totalDelegatedBalance = UInt64.fromNumber(951659889077537);
+  const amountOwed = UInt64.fromNumber(6156000000000);
+  const amountSent = UInt64.fromNumber(17784000000000);
+  const signature = Signature.fromJSON({
+    r: '4585336111649222276312617544050671811572206187060030835626544623230564871660',
+    s: '237051204295006294468927682534940966565639724924538839984357803079436581920733'
+  });
 
   let transaction = await Mina.transaction(
     { feePayerKey: feePayerPrivateKey, fee: transactionFee },
