@@ -66,7 +66,7 @@ export class DelegationOracle extends SmartContract {
 
     // Emit an event containing the verified users id
     this.emitEvent('verified', publicKey);
-    this.emitEvent('producerKey', publicKey);
+    this.emitEvent('producerKey', producerKey);
     this.emitEvent('epoch', epoch);
   }
 }
