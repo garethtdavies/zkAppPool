@@ -6,7 +6,7 @@ A sample project that uses historical data from the [MinaExplorer GraphQL API](h
 
 The **lambda** folder contains an example of an oracle that uses an AWS serverless function, that signs the response from the GraphQL API. An example output is [here](https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38) (could be slow the first time it is run). It takes as inputs a delegating public key and the epoch number.
 
-The **oracle** folder is a zkApp that consumes the oracle data, verifies the signature, and checks to see if the sent amount is greater than the amount required to be sent. If so, the zkApp sends a transaction with an event containing the epoch and both delegator and block producer keys.
+The **oracle** folder is a zkApp that consumes the oracle data, verifies the signature, and checks to see if the sent amount is greater than the amount required to be sent. If so, the zkApp sends a transaction with an event containing the epoch and both delegator and block producer keys. The zkApp account is [B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM](https://berkeley.minaexplorer.com/wallet/B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM) and is currently upgradable. The zkApp stores the oracle public key B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1 as an on-chain state variable. You can confirm this by manually decoding via [this script](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/debug-events.ts).
 
 An example transaction is [here](https://berkeley.minaexplorer.com/transaction/CkpZUfHgefJ3EAb9kFTx6P37qSy6vBRcYPwW72TGnDwv66K67s8WA).
 
