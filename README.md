@@ -62,4 +62,4 @@ This will output a list of all keys that have sucessfully verified via the zkApp
 38 B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKG1niy2McyztRhv98f B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKFUQAwx6uiqn1gMaLm
 ```
 
-Note: This is very much a proof of concept. Some testnet keys have been hardcoded into the app to pay for transactions and to sign the data. The oracle only considers the total amount received between slots 3501 of the epoch in question, and slot 3500 of the next epoch, which is how the automated email scripts determine it. If you have paid late, early or have sent different payouts to compenstate for earlier epochs it will not take this into account.
+Note: This is very much a proof of concept. Some testnet keys have been hardcoded into the app to pay for transactions and to sign the data. The oracle only considers the total amount received between slots 3501 of the epoch in question, and slot 3500 of the next epoch, which is how the automated email scripts determine it. If you have paid late, early or have sent different payouts to compensate for earlier epochs it will not take this into account.
