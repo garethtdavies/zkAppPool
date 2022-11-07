@@ -2,11 +2,11 @@
 A zkApp based staking pool for MINA (WIP).
 
 ## Oracle example
-A sample project that uses historical data from the GraphQL API in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcasted. This can be subsequently read with a script `output.ts`.
+A sample project that uses historical data from the [MinaExplorer GraphQL API](https://berkeley.graphql.minaexplorer.com/) in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcast. This can be subsequently read from data stored in an archive serve e.g. with a script such as `[output.ts](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/output.ts)`. For more details on the delegation program see [here](https://docs.minaprotocol.com/node-operators/foundation-delegation-program).
 
-The **lambda** folder contains an example of an oracle that uses an AWS serverless function, that signs the response from the GraphQL API. An example output is [here](https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38) (could be slow the first time it is run).
+The **lambda** folder contains an example of an oracle that uses an AWS serverless function, that signs the response from the GraphQL API. An example output is [here](https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38) (could be slow the first time it is run). It takes as inputs a delegating public key and the epoch number.
 
-The **oracle** folder is a zkApp that consumes the oracle data, verifies the signature and checks to see if the sent amount is greater than the amount required to be sent. If so, the zkApp send a transaction with an event containing the epoch and both delegator and block producer keys.
+The **oracle** folder is a zkApp that consumes the oracle data, verifies the signature, and checks to see if the sent amount is greater than the amount required to be sent. If so, the zkApp sends a transaction with an event containing the epoch and both delegator and block producer keys.
 
 An example transaction is [here](https://berkeley.minaexplorer.com/transaction/CkpZUfHgefJ3EAb9kFTx6P37qSy6vBRcYPwW72TGnDwv66K67s8WA).
 
@@ -34,7 +34,7 @@ You can run this for your own key by cloning this repo and entering the value of
 ```
 cd oracle
 npm install
-# Replace the key and epoch you wish the verify here. it will fail if the required funds have not been sent
+# Replace the key and epoch you wish the verify here. It will fail (non-gracefully) if the required funds have not been sent
 npm run build && node build/src/main.js B62qmRapzi3nrctTihmaeH3CNbsDkpAAmf5osj9SvucNTU7jteFchhZ 39
 ```
 
