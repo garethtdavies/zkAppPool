@@ -62,26 +62,32 @@ import {
   const amountSent = UInt64.fromNumber(data.data.amountSent);
   const signature = Signature.fromJSON(data.signature);
 
-  let transaction = await Mina.transaction(
-    { feePayerKey: feePayerPrivateKey, fee: transactionFee },
-    () => {
-      //zkAppInstance.init();
-      zkAppInstance.verify(
-        epoch,
-        publicKey,
-        producerKey,
-        blocksWon,
-        delegatedBalance,
-        totalDelegatedBalance,
-        amountOwed,
-        amountSent,
-        signature
-      );
-    }
-  );
+  try {
+    let transaction = await Mina.transaction(
+      { feePayerKey: feePayerPrivateKey, fee: transactionFee },
+      () => {
+        //zkAppInstance.init();
+        zkAppInstance.verify(
+          epoch,
+          publicKey,
+          producerKey,
+          blocksWon,
+          delegatedBalance,
+          totalDelegatedBalance,
+          amountOwed,
+          amountSent,
+          signature
+        );
+      }
+    );
 
-  await transaction.prove();
-  await transaction.send().wait();
+    await transaction.prove();
+    await transaction.send().wait();
+
+  } catch (ex: any) {
+    console.log("There was an issue creating the proof. Check the amount sent is greater than the amount owed.");
+    console.log(ex.message);
+  }
 
   // ----------------------------------------------------
   console.log('Shutting down');
