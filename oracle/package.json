@@ -45,5 +45,8 @@
   },
   "peerDependencies": {
     "snarkyjs": "^0.6.0"
+  },
+  "dependencies": {
+    "graphql-request": "^5.0.0"
   }
 }
