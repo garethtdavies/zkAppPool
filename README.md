@@ -1,5 +1,5 @@
 # zkAppPool
-A zkApp based staking pool for MINA (WIP).
+A zkApp based staking pool for MINA (WIP) developed for the zkApp builders program.
 
 ## Delegation Program Oracle example
 A sample project that uses historical data from the [MinaExplorer GraphQL API](https://berkeley.graphql.minaexplorer.com/) in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcast. This can be subsequently read from data stored in an archive serve e.g. with a script such as [output.ts](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/output.ts). For more details on the delegation program see [here](https://docs.minaprotocol.com/node-operators/foundation-delegation-program).
