@@ -85,7 +85,7 @@ import {
     await transaction.send().wait();
 
   } catch (ex: any) {
-    console.log("There was an issue creating the proof. Check the amount sent is greater than the amount owed.");
+    console.log("There was an issue creating the proof. Check the amount sent (" + amountSent + ") is greater than the amount owed (" + amountOwed + ")");
     console.log(ex.message);
   }
 
