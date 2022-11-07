@@ -38,7 +38,7 @@ npm install
 npm run build && node build/src/main.js B62qmRapzi3nrctTihmaeH3CNbsDkpAAmf5osj9SvucNTU7jteFchhZ 39
 ```
 
-Wait for inclusion in a block, then you can read the values stored as events by running the output.ts script:
+Wait for inclusion in a block, then you can read the values stored as events by running the [output.ts](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/output.ts) script:
 
 ```
 # Wait for inclusion and run from oracle folder
