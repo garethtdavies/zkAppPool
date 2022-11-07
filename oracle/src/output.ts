@@ -33,6 +33,9 @@ query getEvents {
 
   await isReady;
 
+  // Set some headers for the output
+  console.log("Epoch", "ProducerKey", "DelegatingKey", "TransactionHash");
+
   // This returns an array that includes the zkApp hash and the stored events
   const eventData = await request('https://berkeley.graphql.minaexplorer.com', query).then((data) => {
     return data.zkapps;
@@ -70,7 +73,7 @@ query getEvents {
       });
 
       // if you are in this list you are good...
-      console.log(epoch[1], producerKeyDecoded.toBase58(), delegatingKeyDecoded.toBase58());
+      console.log(epoch[1], producerKeyDecoded.toBase58(), delegatingKeyDecoded.toBase58(), txhash);
     }
   }
 
