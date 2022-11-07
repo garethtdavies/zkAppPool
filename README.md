@@ -64,6 +64,13 @@ Epoch ProducerKey DelegatingKey TransactionHash
 38 B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKG1niy2McyztRhv98f B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKFUQAwx6uiqn1gMaLm CkpYX9JQJEAmwKmKcKuy1ej7kRng3cdAGdE8dU25cwmQpBHNkSSfY
 ```
 
-Note: This is very much a proof of concept. Some testnet keys have been hardcoded into the app to pay for transactions and to sign the data. The oracle only considers the total amount received between slots 3501 of the epoch in question, and slot 3500 of the next epoch, which is how the automated email scripts determine it. If you have paid late, early or have sent different payouts to compensate for earlier epochs it will not take this into account.
+**Note**: This is very much a proof of concept. Some testnet keys have been hardcoded into the app to pay for transactions and to sign the data. The oracle only considers the total amount received between slots 3501 of the epoch in question, and slot 3500 of the next epoch, which is how the automated email scripts determine it. If you have paid late, early or have sent different payouts to compensate for earlier epochs it will not take this into account.
 
 Ongoing issue: https://github.com/o1-labs/snarkyjs/issues/530
+
+TODO: 
+
+* When verification fails, exit gracefully providing feedback as to the payment discrepancy.
+* Remove all hardcoded keys used for testing.
+* Update zkApp permissions so the contract (and oracle key) can't be upgraded and interaction only allowed via proofs.
+* Do the actual payout calculation within the zkApp using the provided data to prove this is being done correctly
