@@ -2,7 +2,7 @@
 A zkApp based staking pool for MINA (WIP).
 
 ## Oracle example
-A sample project that uses historical data from the [MinaExplorer GraphQL API](https://berkeley.graphql.minaexplorer.com/) in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcast. This can be subsequently read from data stored in an archive serve e.g. with a script such as `[output.ts](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/output.ts)`. For more details on the delegation program see [here](https://docs.minaprotocol.com/node-operators/foundation-delegation-program).
+A sample project that uses historical data from the [MinaExplorer GraphQL API](https://berkeley.graphql.minaexplorer.com/) in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcast. This can be subsequently read from data stored in an archive serve e.g. with a script such as [output.ts](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/output.ts). For more details on the delegation program see [here](https://docs.minaprotocol.com/node-operators/foundation-delegation-program).
 
 The **lambda** folder contains an example of an oracle that uses an AWS serverless function, that signs the response from the GraphQL API. An example output is [here](https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38) (could be slow the first time it is run). It takes as inputs a delegating public key and the epoch number.
 
