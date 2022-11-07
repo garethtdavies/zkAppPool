@@ -1,6 +1,16 @@
 # zkAppPool
 A zkApp based staking pool for MINA (WIP) developed for the zkApp builders program.
 
+The aim of the project is to research and improve the mechanisms for MINA staking pool payouts. The current major issues are:
+
+* Delegators have to trust the validator calculated the rewards correctly.
+* All rewards are custodied by the validator, who can simply not pay or steal funds at their discretion.
+* Pool payouts dominate transaction throughput of the network, particularly at the start of an epoch. Due to the number of transactions and block size it is very slow for a payout run for a larger validator to complete.
+
+The overarching goal is to develop a trust-minimized zkApp staking pool such that anyone can, in the case of last resort, force a payout from a validator. A zkApp should verify the payout calculation, and a validator can also not steal funds, which could be held in a coinbase receiver account with permissions to only send via a valid proof.
+
+This repo also contains some other scripts/examples that help in developing the zkApp pool.
+
 ## Delegation Program Oracle example
 A sample project that uses historical data from the [MinaExplorer GraphQL API](https://berkeley.graphql.minaexplorer.com/) in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcast. This can be subsequently read from data stored in an archive serve e.g. with a script such as [output.ts](https://github.com/garethtdavies/zkAppPool/blob/main/oracle/src/output.ts). For more details on the delegation program see [here](https://docs.minaprotocol.com/node-operators/foundation-delegation-program).
 
