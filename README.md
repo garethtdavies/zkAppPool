@@ -4,13 +4,13 @@ A zkApp based staking pool for MINA (WIP).
 ## Oracle example
 A sample project that uses historical data from the GraphQL API in a zkApp to verify that a delegation program member has made the required payouts for an epoch. If they have, a transaction with an associated event will be broadcasted. This can be subsequently read with a script `output.ts`.
 
-The **lambda** folder contains an example of an oracle that uses an AWS serverless function, that signs the response from the GraphQL API. An example output is [here](https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38)
+The **lambda** folder contains an example of an oracle that uses an AWS serverless function, that signs the response from the GraphQL API. An example output is [here](https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38) (could be slow the first time it is run).
 
 The **oracle** folder is a zkApp that consumes the oracle data, verifies the signature and checks to see if the sent amount is greater than the amount required to be sent. If so, the zkApp send a transaction with an event containing the epoch and both delegator and block producer keys.
 
 An example transaction is [here](https://berkeley.minaexplorer.com/transaction/CkpZUfHgefJ3EAb9kFTx6P37qSy6vBRcYPwW72TGnDwv66K67s8WA).
 
-You can query all events for the zkApp using https://berkeley.graphql.minaexplorer.com/ and the following query:
+You can query all events for the zkApp using https://berkeley.graphql.minaexplorer.com/ and the following query. Note that the values are returned as fields so need to be converted to e.g. a public key (see the `output.ts` script).
 
 ```gql
 query getEvents {
