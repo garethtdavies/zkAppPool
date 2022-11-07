@@ -45,9 +45,11 @@ Wait for inclusion in a block, then you can read the values stored as events by 
 npm run build && node ./build/src/output.js
 ```
 
-This will output a list of all keys that have sucessfully verified e.g.:
+This will output a list of all keys that have sucessfully verified via the zkApp e.g.:
 ```
 39 B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKFWfnXvT4MbtHuiueD B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKHv8hkrgAeqqq6mQ8y
 39 B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKFVF255aw3TH4C1Cca B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKG3b5HvLEwBjng3UdF
 38 B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKG1niy2McyztRhv98f B62qiTKpEPjGTSHZrtM8uXiKgn8So916pLmNJKFUQAwx6uiqn1gMaLm
 ```
+
+Note: This is very much a proof of concept. Some testnet keys have been hardcoded into the app to pay for transactions and to sign the data. The oracle only considers the total amount received between slots 3501 of the epoch in question, and slot 3500 of the next epoch, which is how the automated email scripts determine it. If you have paid late, early or have sent different payouts to compenstate for earlier epochs it will not take this into account.
