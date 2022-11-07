@@ -70,7 +70,7 @@ Ongoing issue: https://github.com/o1-labs/snarkyjs/issues/530
 
 TODO: 
 
-* When verification fails, exit gracefully providing feedback as to the payment discrepancy.
+* ~~When verification fails, exit gracefully providing feedback as to the payment discrepancy.~~
 * Remove all hardcoded keys used for testing.
 * Update zkApp permissions so the contract (and oracle key) can't be upgraded and interaction only allowed via proofs.
 * Do the actual payout calculation within the zkApp using the provided data to prove this is being done correctly
