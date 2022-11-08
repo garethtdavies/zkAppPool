@@ -68,6 +68,8 @@ import {
   const amountSent = UInt64.fromNumber(data.data.amountSent);
   const signature = Signature.fromJSON(data.signature);
 
+  console.log("Creating the transaction");
+
   try {
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
