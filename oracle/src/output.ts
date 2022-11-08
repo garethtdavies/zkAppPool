@@ -51,30 +51,38 @@ query getEvents {
     // Skip if empty events
     if (events.length !== 0) {
       // We now have an array of strings storing the epoch, delegating key and producer key which we need to parse
-      // [
-      // '[0 38]',
-      // '[1 26868873380297534395872666428719823424609886695519542262601133629691829058479 1]',
-      // '[2 17516588400988562918237937706413251051507497045801139504256946332900036501674 1]'
-      // ]
+      /*
+      [
+        '0,39',
+        '1,26150952379243507871607825967736271252178805445177618043717111529308046598186,1',
+        '2,2842267390317630846193264213920930721830097341008791000054477767930260033567,1'
+      ]
+      */
 
-      // Hacky, but need to convert the data to an array
-      let epoch = JSON.parse(events[0].split(/[ ,]+/).join(','));
-      let producerKey = JSON.parse(events[1].split(/[ ,]+/).join(','));
-      let delegatingKey = JSON.parse(events[2].split(/[ ,]+/).join(','));
+      // This is stored as a comma seperated string.
+      // We need to break apart based on comma, but keeping all fields as strings as else large ints cause issues
+      let epoch = events[0].split(",");
+      let producerKey = events[1].split(",");
+      let delegatingKey = events[2].split(",");
+
+      //console.log(epoch);
+      //console.log(producerKey);
+      //console.log(delegatingKey);
 
       // Convert the keys
       let producerKeyDecoded = PublicKey.from({
-        x: Field(BigInt(producerKey[1])),
-        isOdd: Bool(Boolean(producerKey[2])),
+        x: Field(producerKey[1]),
+        isOdd: Bool(Boolean(Number(producerKey[2]))),
       });
 
       let delegatingKeyDecoded = PublicKey.from({
-        x: Field(BigInt(delegatingKey[1])),
-        isOdd: Bool(Boolean(delegatingKey[2])),
+        x: Field(delegatingKey[1]),
+        isOdd: Bool(Boolean(Number(delegatingKey[2]))),
       });
 
       // if you are in this list you are good...
       console.log(epoch[1], producerKeyDecoded.toBase58(), delegatingKeyDecoded.toBase58(), txhash);
+
     }
   }
 
