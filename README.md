@@ -74,3 +74,7 @@ TODO:
 * Remove all hardcoded keys used for testing.
 * Update zkApp permissions so the contract (and oracle key) can't be upgraded and interaction only allowed via proofs.
 * Do the actual payout calculation within the zkApp using the provided data to prove this is being done correctly
+
+## Price Oracle
+
+The **lambda-price** function contains a serverless function to get the latest MINA price from CoinGecko and sign the response. You can invoke this function [here](https://hdbuc4znywgfyvhdk7k42525ma0ykwsh.lambda-url.us-west-2.on.aws/) with no additional parameters.
