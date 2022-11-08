@@ -77,4 +77,4 @@ TODO:
 
 ## Price Oracle
 
-The **lambda-price** function contains a serverless function to get the latest MINA price from CoinGecko and sign the response. You can invoke this function [here](https://hdbuc4znywgfyvhdk7k42525ma0ykwsh.lambda-url.us-west-2.on.aws/) with no additional parameters.
+The **lambda-price** folder contains a AWS serverless function to get the latest MINA price from CoinGecko and sign the response. You can invoke this function [here](https://hdbuc4znywgfyvhdk7k42525ma0ykwsh.lambda-url.us-west-2.on.aws/) with no additional parameters.
