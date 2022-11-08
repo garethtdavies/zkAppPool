@@ -1,6 +1,7 @@
 "use strict";
 // This API returns the latest price data from Coingecko API
 // Can run locall with `npm run build && npm run locally` to simulate the lambda function
+// URL to run this is https://hdbuc4znywgfyvhdk7k42525ma0ykwsh.lambda-url.us-west-2.on.aws/
 Object.defineProperty(exports, "__esModule", { value: true });
 const snarkyjs_1 = require("snarkyjs");
 exports.handler = async (event) => {
@@ -19,9 +20,8 @@ exports.handler = async (event) => {
     }).catch((error) => {
         console.log(error);
     });
-    console.log(priceData);
     // This price is in dollars e.g. 0.635231 - we want in cents and then rounded to the nearest cent
-    const price = snarkyjs_1.UInt32.fromNumber(Math.round(priceData["mina-protocol"].usd));
+    const price = snarkyjs_1.UInt32.fromNumber(Math.round(priceData["mina-protocol"].usd * 100));
     const marketCap = snarkyjs_1.UInt64.fromNumber(Math.round(priceData["mina-protocol"].usd_market_cap));
     const lastUpdate = snarkyjs_1.UInt64.fromNumber(priceData["mina-protocol"].last_updated_at);
     // Sign all the data
