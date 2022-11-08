@@ -47,8 +47,14 @@ import {
   console.log(functionUrl);
 
   // Make the API call
-  const response = await fetch(functionUrl);
-  const data = await response.json();
+  const data = await fetch(functionUrl).then((response) => {
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error('Something went wrong fetching the data.');
+  }).catch((error: any) => {
+    console.log(error)
+  });
 
   console.log(data);
 
@@ -84,9 +90,9 @@ import {
     await transaction.prove();
     await transaction.send().wait();
 
-  } catch (ex: any) {
+  } catch (error: any) {
     console.log("There was an issue creating the proof. Check the amount sent (" + amountSent + ") is greater than the amount owed (" + amountOwed + ")");
-    console.log(ex.message);
+    console.log(error.message);
   }
 
   // ----------------------------------------------------
