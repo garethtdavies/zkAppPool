@@ -99,7 +99,7 @@ exports.handler = async (event) => {
     const stakingData = await (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query2, { delegate: eventKey, epoch: epochEvent }).then((data) => {
         return data.stakes;
     });
-    const numDelegators = stakingData.len();
+    const numDelegators = stakingData.length;
     console.log("There are " + numDelegators + " in the pool");
     // Get the last block of the epoch in question
     // This enforces we can't run multiple times an epoch as need to wait for it to complete - you could do this differently but this works for now

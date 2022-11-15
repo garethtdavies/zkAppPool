@@ -139,9 +139,9 @@ exports.handler = async (event) => {
     return data.stakes;
   });
 
-  const numDelegators = stakingData.len();
+  const numDelegators = stakingData.length;
 
-  console.log("There are " + numDelegators + " in the pool");
+  console.log("There are " + numDelegators + " delegators in the pool");
 
   // Get the last block of the epoch in question
   // This enforces we can't run multiple times an epoch as need to wait for it to complete - you could do this differently but this works for now
@@ -237,7 +237,7 @@ exports.handler = async (event) => {
   const numDelegatorsFields = UInt32.from(numDelegators);
 
   // Sign the additional metadata
-  signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegators.toFields());
+  signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegatorsFields.toFields());
 
   // Sign it with the oracle public key
   const signature = Signature.create(privateKey, signedData);
@@ -248,7 +248,7 @@ exports.handler = async (event) => {
       "confirmed": confirmedToField,
       "poolBalance": poolBalanceToField,
       "totalRewards": totalRewards,
-      "numDelegators": numDelegators,
+      "numDelegators": numDelegatorsFields,
     },
     rewards: outputArray,
     signature: signature,
