@@ -1,13 +1,14 @@
 "use strict";
 // This will just return precalculated payouts for an epoch payout
 // TODO this currently doesn't have a fee for the validator
+// https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/
 Object.defineProperty(exports, "__esModule", { value: true });
 const snarkyjs_1 = require("snarkyjs");
 const graphql_request_1 = require("graphql-request");
 // This query gets the blocks won in an epoch for a producer
 const query = (0, graphql_request_1.gql) `
 query($creator: String!, $epoch: Int){
-  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 1000) {
+  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 10) {
     blockHeight
     canonical
     creator
@@ -41,7 +42,7 @@ query($creator: String!, $epoch: Int){
 // This query gets the staking balances for everyone in an epoch
 const query2 = (0, graphql_request_1.gql) `
 query($delegate: String!, $epoch: Int!){
-  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 100000, sortBy: BALANCE_DESC) {
+  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 10, sortBy: BALANCE_DESC) {
     public_key
     balance
     chainId
@@ -81,11 +82,8 @@ exports.handler = async (event) => {
     // The number of confirmations we need
     const confirmations = 15;
     // get the event from Lambda URI
-    //const eventKey = event.queryStringParameters.publicKey;
-    //const epochEvent = event.queryStringParameters.epoch;
-    // mock this for testing
-    const eventKey = "B62qpge4uMq4Vv5Rvc8Gw9qSquUYd6xoW1pz7HQkMSHm6h1o7pvLPAN";
-    const epochEvent = 39;
+    const eventKey = event.queryStringParameters.publicKey;
+    const epochEvent = event.queryStringParameters.epoch;
     // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
     const privateKey = snarkyjs_1.PrivateKey.fromBase58("EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53");
     // We compute the public key associated with our private key

@@ -113,12 +113,8 @@ exports.handler = async (event) => {
   };
 
   // get the event from Lambda URI
-  //const eventKey = event.queryStringParameters.publicKey;
-  //const epochEvent = event.queryStringParameters.epoch;
-
-  // mock this for testing
-  const eventKey = "B62qpge4uMq4Vv5Rvc8Gw9qSquUYd6xoW1pz7HQkMSHm6h1o7pvLPAN";
-  const epochEvent = 39;
+  const eventKey = event.queryStringParameters.publicKey;
+  const epochEvent = event.queryStringParameters.epoch;
 
   // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
   const privateKey = PrivateKey.fromBase58(
