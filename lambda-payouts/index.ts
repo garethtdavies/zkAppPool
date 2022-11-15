@@ -1,6 +1,6 @@
 // This will just return precalculated payouts for an epoch payout
 // TODO this currently doesn't have a fee for the validator
-// https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/
+// https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39
 
 import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64, Bool } from "snarkyjs";
 import { request, gql } from 'graphql-request';
@@ -8,7 +8,7 @@ import { request, gql } from 'graphql-request';
 // This query gets the blocks won in an epoch for a producer
 const query = gql`
 query($creator: String!, $epoch: Int){
-  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 10) {
+  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 1000) {
     blockHeight
     canonical
     creator
@@ -43,7 +43,7 @@ query($creator: String!, $epoch: Int){
 // This query gets the staking balances for everyone in an epoch
 const query2 = gql`
 query($delegate: String!, $epoch: Int!){
-  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 10, sortBy: BALANCE_DESC) {
+  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 100000, sortBy: BALANCE_DESC) {
     public_key
     balance
     chainId
