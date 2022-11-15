@@ -100,7 +100,7 @@ exports.handler = async (event) => {
         return data.stakes;
     });
     const numDelegators = stakingData.length;
-    console.log("There are " + numDelegators + " in the pool");
+    console.log("There are " + numDelegators + " delegators in the pool");
     // Get the last block of the epoch in question
     // This enforces we can't run multiple times an epoch as need to wait for it to complete - you could do this differently but this works for now
     const lastBlockOfEpoch = await (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query3, { epoch: epochEvent }).then((data) => {
@@ -170,7 +170,7 @@ exports.handler = async (event) => {
     const totalRewards = snarkyjs_1.UInt64.from(totalPoolToShare);
     const numDelegatorsFields = snarkyjs_1.UInt32.from(numDelegators);
     // Sign the additional metadata
-    signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegators.toFields());
+    signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegatorsFields.toFields());
     // Sign it with the oracle public key
     const signature = snarkyjs_1.Signature.create(privateKey, signedData);
     const data = {
@@ -179,7 +179,7 @@ exports.handler = async (event) => {
             "confirmed": confirmedToField,
             "poolBalance": poolBalanceToField,
             "totalRewards": totalRewards,
-            "numDelegators": numDelegators,
+            "numDelegators": numDelegatorsFields,
         },
         rewards: outputArray,
         signature: signature,
