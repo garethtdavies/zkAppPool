@@ -41,7 +41,7 @@ query($creator: String!, $epoch: Int){
 // This query gets the staking balances for everyone in an epoch
 const query2 = (0, graphql_request_1.gql) `
 query($delegate: String!, $epoch: Int!){
-  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 10, sortBy: BALANCE_DESC) {
+  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 100000, sortBy: BALANCE_DESC) {
     public_key
     balance
     chainId
