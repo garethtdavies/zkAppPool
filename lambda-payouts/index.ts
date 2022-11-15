@@ -1,16 +1,13 @@
 // This will just return precalculated payouts for an epoch payout
-// We can then use this in a zkApp or store ina merkle tree
-// Need to check in the zkApp that 290 blocks have passed of the epoch after
-// Can do that via preconditions
-// The zkApp will create the merkle tree?
+// TODO this currently doesn't have a fee for the validator
 
-import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64 } from "snarkyjs";
+import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64, Bool } from "snarkyjs";
 import { request, gql } from 'graphql-request';
 
 // This query gets the blocks won in an epoch for a producer
 const query = gql`
 query($creator: String!, $epoch: Int){
-  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 10000) {
+  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 1000) {
     blockHeight
     canonical
     creator
@@ -45,7 +42,7 @@ query($creator: String!, $epoch: Int){
 // This query gets the staking balances for everyone in an epoch
 const query2 = gql`
 query($delegate: String!, $epoch: Int!){
-  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 10) {
+  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 100000, sortBy: BALANCE_DESC) {
     public_key
     balance
     chainId
@@ -64,16 +61,38 @@ query($delegate: String!, $epoch: Int!){
 }
 `;
 
+// This query gets the last block of the epoch in question
+const query3 = gql`
+query ($epoch: Int) {
+  blocks(query: {protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: BLOCKHEIGHT_DESC, limit: 1) {
+    blockHeight
+  }
+}
+`;
+
+// We need the current block for confirmations
+const query4 = gql`
+{
+  blocks(query: {canonical: true}, sortBy: BLOCKHEIGHT_DESC, limit: 1) {
+    blockHeight
+  }
+}
+`;
+
 exports.handler = async (event) => {
 
-  console.log("Running");
+  console.log("Let's go...");
 
   await isReady;
+
+  // The number of confirmations we need
+  const confirmations = 15;
+  const feePercentage = 0;
 
   // Define the type that our function (and API) will return
   type Data = {
     data: Reward[];
-    //signature: Signature;
+    signature: Signature;
     publicKey: PublicKey;
   };
 
@@ -83,6 +102,7 @@ exports.handler = async (event) => {
     "delegatingBalance": UInt64;
     "rewards": UInt64;
     "epoch": UInt32;
+    "confirmed": Bool; // This enforces we only payout once we have enough confirmations
   };
 
   // get the event from Lambda URI
@@ -113,11 +133,58 @@ exports.handler = async (event) => {
     return data.stakes;
   });
 
-  //console.log(stakingData);
+  // Get the last block of the epoch in question
+  // This enforces we can't run multiple times an epoch as need to wait for it to complete - you could do this differently but this works for now
+  const lastBlockOfEpoch = await request('https://graphql.minaexplorer.com', query3, { epoch: epochEvent }).then((data) => {
+    return data.blocks[0].blockHeight;
+  });
+
+  console.log("Last block of epoch is: " + lastBlockOfEpoch);
+
+  // Get current height
+  const currentHeight = await request('https://graphql.minaexplorer.com', query4).then((data) => {
+    return data.blocks[0].blockHeight;
+  });
+
+  console.log("Current height is: " + currentHeight);
+
+  // Check if we have enough confs past end of epoch - we return a boolean so the signed data doesn't change
+  const minConfirmations = (currentHeight >= lastBlockOfEpoch + confirmations) ? true : false;
+  console.log("Do we have enough confirmations: " + minConfirmations);
+
+  /*Calculate rewards*/
+  const poolBalance = stakingData.reduce((sum, current) => sum + current.balance, 0);
+  console.log("The pool balance is " + poolBalance);
+
+  /* Simplest payout algorithm - can tweak this later
+  /* Assuming no supercharged rewards moving forward
+  /* We'll just split the coinbase for each block
+  */
+
+  let coinbaseRewards = 0;
+  let txRewards = 0;
+  let snarkFees = 0;
+
+  //console.log(blocksData);
+  blocksData.forEach((block) => {
+    coinbaseRewards = coinbaseRewards + Number(block.transactions.coinbase);
+    txRewards = txRewards + Number(block.txFees);
+    snarkFees = snarkFees + Number(block.snarkFees);
+  });
+
+  console.log("Total rewards to share are: " + coinbaseRewards / 1000000000);
+  console.log("Total tx fees to share are: " + txRewards / 1000000000);
+  console.log("Total snark fees are: " + snarkFees / 1000000000);
+
+  const totalPoolToShare = coinbaseRewards + txRewards - snarkFees;
+
+  console.log("Total payout is: " + totalPoolToShare / 1000000000);
 
   let outputArray: Reward[] = [];
 
-  var index = 0;
+  let index = 0;
+
+  var signedData: Field[] = [];
 
   // Anyone who is in this list will be getting a reward, asssuming above 0
   stakingData.forEach((staker) => {
@@ -126,19 +193,33 @@ exports.handler = async (event) => {
 
     let delegatingKey = staker.public_key;
     // Convert to nanomina and force to an int
-    let delegatingBalance = Math.trunc(staker.balance * 1000000000);
+    let delegatingBalance = staker.balance;
 
-    // Determine rewards based on percentage of pool
-    let rewards = 123;
+    // Determine individula staking rewards based on percentage of pool
+    let rewards = Math.trunc((1 - feePercentage) * (delegatingBalance / poolBalance) * totalPoolToShare);
+
+    // Format 
+    const indexToField = UInt32.from(index);
+    const publicKeyToField = PublicKey.fromBase58(delegatingKey);
+    const delegatingBalanceToField = UInt64.from(Math.trunc(delegatingBalance * 1000000000));
+    const rewardsToField = UInt64.from(rewards);
+    const epochToField = UInt32.from(epochEvent);
+    const confirmedToField = Bool(minConfirmations);
+
+    // Concat the fields to sign all this data
+    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields());
 
     // Add this to our response
     outputArray.push({
-      "index": UInt32.from(index),
-      "publicKey": PublicKey.fromBase58(delegatingKey),
-      "delegatingBalance": UInt64.from(delegatingBalance),
-      "rewards": UInt64.from(rewards),
-      "epoch": UInt32.from(epochEvent),
-    })
+      "index": indexToField,
+      "publicKey": publicKeyToField,
+      "delegatingBalance": delegatingBalanceToField,
+      "rewards": rewardsToField,
+      "epoch": epochToField,
+      "confirmed": confirmedToField
+    });
+
+    // TODO need confirmations here to enforce you can't run this without blocks confirming
 
     index++;
   });
@@ -147,12 +228,11 @@ exports.handler = async (event) => {
 
   // Now to sign the data I have to convert everything to fields
 
-
-  //const signature = Signature.create(privateKey, [Field("werwerwer")]);
+  const signature = Signature.create(privateKey, signedData);
 
   const data: Data = {
     data: outputArray,
-    //signature: signature,
+    signature: signature,
     publicKey: signingKey,
   };
 
