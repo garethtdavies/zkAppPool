@@ -18,6 +18,7 @@ State variables:
 * Payout Index
 * Epoch
 * Validator key (2 slots)
+* Fees paid epoch (ensure we ccan only claim fees once per epoch)
 
 You can't run this before 15 blocks (or whatever is set in `confirmations`) have passed in the next epoch.
 
