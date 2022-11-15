@@ -87,22 +87,27 @@ exports.handler = async (event) => {
 
   // The number of confirmations we need
   const confirmations = 15;
-  const feePercentage = 0;
 
   // Define the type that our function (and API) will return
   type Data = {
-    data: Reward[];
+    rewards: Reward[];
+    data: EpochData;
     signature: Signature;
     publicKey: PublicKey;
   };
+
+  type EpochData = {
+    "epoch": UInt32;
+    "confirmed": Bool;
+    "poolBalance": UInt64;
+    "totalRewards": UInt64;
+  }
 
   type Reward = {
     "index": UInt32;
     "publicKey": PublicKey;
     "delegatingBalance": UInt64;
     "rewards": UInt64;
-    "epoch": UInt32;
-    "confirmed": Bool; // This enforces we only payout once we have enough confirmations
   };
 
   // get the event from Lambda URI
@@ -196,18 +201,16 @@ exports.handler = async (event) => {
     let delegatingBalance = staker.balance;
 
     // Determine individula staking rewards based on percentage of pool
-    let rewards = Math.trunc((1 - feePercentage) * (delegatingBalance / poolBalance) * totalPoolToShare);
+    let rewards = Math.trunc((delegatingBalance / poolBalance) * totalPoolToShare);
 
     // Format 
     const indexToField = UInt32.from(index);
     const publicKeyToField = PublicKey.fromBase58(delegatingKey);
     const delegatingBalanceToField = UInt64.from(Math.trunc(delegatingBalance * 1000000000));
     const rewardsToField = UInt64.from(rewards);
-    const epochToField = UInt32.from(epochEvent);
-    const confirmedToField = Bool(minConfirmations);
 
     // Concat the fields to sign all this data
-    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields());
+    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields());
 
     // Add this to our response
     outputArray.push({
@@ -215,8 +218,6 @@ exports.handler = async (event) => {
       "publicKey": publicKeyToField,
       "delegatingBalance": delegatingBalanceToField,
       "rewards": rewardsToField,
-      "epoch": epochToField,
-      "confirmed": confirmedToField
     });
 
     // TODO need confirmations here to enforce you can't run this without blocks confirming
@@ -224,14 +225,25 @@ exports.handler = async (event) => {
     index++;
   });
 
-  //console.log(outputArray);
+  const epochToField = UInt32.from(epochEvent);
+  const confirmedToField = Bool(minConfirmations);
+  const poolBalanceToField = UInt64.from(Math.trunc(poolBalance * 1000000000));
+  const totalRewards = UInt64.from(totalPoolToShare);
 
-  // Now to sign the data I have to convert everything to fields
+  // Sign the additional metadata
+  signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields());
 
+  // Sign it with the oracle public key
   const signature = Signature.create(privateKey, signedData);
 
   const data: Data = {
-    data: outputArray,
+    rewards: outputArray,
+    data: {
+      "epoch": epochToField,
+      "confirmed": confirmedToField,
+      "poolBalance": poolBalanceToField,
+      "totalRewards": totalRewards,
+    },
     signature: signature,
     publicKey: signingKey,
   };

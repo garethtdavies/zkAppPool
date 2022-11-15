@@ -80,7 +80,6 @@ exports.handler = async (event) => {
     await snarkyjs_1.isReady;
     // The number of confirmations we need
     const confirmations = 15;
-    const feePercentage = 0;
     // get the event from Lambda URI
     //const eventKey = event.queryStringParameters.publicKey;
     //const epochEvent = event.queryStringParameters.epoch;
@@ -145,33 +144,40 @@ exports.handler = async (event) => {
         // Convert to nanomina and force to an int
         let delegatingBalance = staker.balance;
         // Determine individula staking rewards based on percentage of pool
-        let rewards = Math.trunc((1 - feePercentage) * (delegatingBalance / poolBalance) * totalPoolToShare);
+        let rewards = Math.trunc((delegatingBalance / poolBalance) * totalPoolToShare);
         // Format 
         const indexToField = snarkyjs_1.UInt32.from(index);
         const publicKeyToField = snarkyjs_1.PublicKey.fromBase58(delegatingKey);
         const delegatingBalanceToField = snarkyjs_1.UInt64.from(Math.trunc(delegatingBalance * 1000000000));
         const rewardsToField = snarkyjs_1.UInt64.from(rewards);
-        const epochToField = snarkyjs_1.UInt32.from(epochEvent);
-        const confirmedToField = (0, snarkyjs_1.Bool)(minConfirmations);
         // Concat the fields to sign all this data
-        signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields());
+        signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields());
         // Add this to our response
         outputArray.push({
             "index": indexToField,
             "publicKey": publicKeyToField,
             "delegatingBalance": delegatingBalanceToField,
             "rewards": rewardsToField,
-            "epoch": epochToField,
-            "confirmed": confirmedToField
         });
         // TODO need confirmations here to enforce you can't run this without blocks confirming
         index++;
     });
-    //console.log(outputArray);
-    // Now to sign the data I have to convert everything to fields
+    const epochToField = snarkyjs_1.UInt32.from(epochEvent);
+    const confirmedToField = (0, snarkyjs_1.Bool)(minConfirmations);
+    const poolBalanceToField = snarkyjs_1.UInt64.from(Math.trunc(poolBalance * 1000000000));
+    const totalRewards = snarkyjs_1.UInt64.from(totalPoolToShare);
+    // Sign the additional metadata
+    signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields());
+    // Sign it with the oracle public key
     const signature = snarkyjs_1.Signature.create(privateKey, signedData);
     const data = {
-        data: outputArray,
+        rewards: outputArray,
+        data: {
+            "epoch": epochToField,
+            "confirmed": confirmedToField,
+            "poolBalance": poolBalanceToField,
+            "totalRewards": totalRewards,
+        },
         signature: signature,
         publicKey: signingKey,
     };

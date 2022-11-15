@@ -26,3 +26,5 @@ The advantage of this, is that the oracle runs independently and anyone can then
 The key part is here we can enforce order on the output so possible to process a zkApp using preconditions on the order.
 
 How to handle the validator payout? Have a different method that checks all have been completed then let them take the fixed percentage.
+
+We enforce the percentage to take on the zkApp. So these amounts are rewards before fees.
