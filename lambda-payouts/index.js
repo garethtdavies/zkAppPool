@@ -41,7 +41,7 @@ query($creator: String!, $epoch: Int){
 // This query gets the staking balances for everyone in an epoch
 const query2 = (0, graphql_request_1.gql) `
 query($delegate: String!, $epoch: Int!){
-  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 100000, sortBy: BALANCE_DESC) {
+  stakes(query: {delegate: $delegate, epoch: $epoch}, limit: 10, sortBy: BALANCE_DESC) {
     public_key
     balance
     chainId
@@ -99,6 +99,8 @@ exports.handler = async (event) => {
     const stakingData = await (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query2, { delegate: eventKey, epoch: epochEvent }).then((data) => {
         return data.stakes;
     });
+    const numDelegators = stakingData.len();
+    console.log("There are " + numDelegators + " in the pool");
     // Get the last block of the epoch in question
     // This enforces we can't run multiple times an epoch as need to wait for it to complete - you could do this differently but this works for now
     const lastBlockOfEpoch = await (0, graphql_request_1.request)('https://graphql.minaexplorer.com', query3, { epoch: epochEvent }).then((data) => {
@@ -166,18 +168,20 @@ exports.handler = async (event) => {
     const confirmedToField = (0, snarkyjs_1.Bool)(minConfirmations);
     const poolBalanceToField = snarkyjs_1.UInt64.from(Math.trunc(poolBalance * 1000000000));
     const totalRewards = snarkyjs_1.UInt64.from(totalPoolToShare);
+    const numDelegatorsFields = snarkyjs_1.UInt32.from(numDelegators);
     // Sign the additional metadata
-    signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields());
+    signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegators.toFields());
     // Sign it with the oracle public key
     const signature = snarkyjs_1.Signature.create(privateKey, signedData);
     const data = {
-        rewards: outputArray,
         data: {
             "epoch": epochToField,
             "confirmed": confirmedToField,
             "poolBalance": poolBalanceToField,
             "totalRewards": totalRewards,
+            "numDelegators": numDelegators,
         },
+        rewards: outputArray,
         signature: signature,
         publicKey: signingKey,
     };
