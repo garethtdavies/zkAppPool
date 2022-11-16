@@ -145,16 +145,16 @@ exports.handler = async (event) => {
   //console.log(blocksWonData);
 
   // convert all of our data to fields
-  const epoch = UInt32.fromNumber(epochEvent);
-  const totalDelegatedBalance = UInt64.fromNumber(delegatedBalanceData * 1000000000);
+  const epoch = UInt32.from(epochEvent);
+  const totalDelegatedBalance = UInt64.from(delegatedBalanceData * 1000000000);
   // This is the Foundation/O(1) Labs address
   const publicKey = PublicKey.fromBase58(eventKey);
   // This is the block producer address
   const producerKey = PublicKey.fromBase58(delegatingKeyData);
-  const blocksWon = UInt32.fromNumber(blocksWonData);
-  const delegatedBalance = UInt64.fromNumber(epochBalanceData * 1000000000);
-  const amountOwed = UInt64.fromNumber(payout * 1000000000);
-  const amountSent = UInt64.fromNumber(sum);
+  const blocksWon = UInt32.from(blocksWonData);
+  const delegatedBalance = UInt64.from(epochBalanceData * 1000000000);
+  const amountOwed = UInt64.from(payout * 1000000000);
+  const amountSent = UInt64.from(sum);
 
   // Sign all the data
   const signedData = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
