@@ -1,0 +1,28 @@
+{
+  "name": "zkapppool",
+  "version": "0.1.0",
+  "description": "A lambda function to sign zkOracle data",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "locally": "node -e \"console.log(require('./index').handler());\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garethtdavies/zkAppPool.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/garethtdavies/zkAppPool/issues"
+  },
+  "homepage": "https://github.com/garethtdavies/zkAppPool#readme",
+  "dependencies": {
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.0.0",
+    "snarkyjs": "^0.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.7"
+  }
+}
