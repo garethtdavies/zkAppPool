@@ -26,6 +26,9 @@ import {
   Mina.setActiveInstance(Berkeley);
 
   let transactionFee = 100_000_000;
+
+  // Let's pass this in via a file (or sign via Auro eventually)
+  // This works for testing as anyone can send a proof without funds
   let feePayerPrivateKey = PrivateKey.fromBase58(
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
