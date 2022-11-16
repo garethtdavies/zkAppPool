@@ -10,12 +10,12 @@ import {
 } from 'snarkyjs';
 import { request, gql } from 'graphql-request';
 
-// The zkApp public key is B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM so we'll just hardcode this
+// The zkApp public key is B62qoDSzH2npmB1jC434dYdmw2gbHvhez2rfmzrj9a58RHe1DQLTgps so we'll just hardcode this
 // We are checking that the tx didn't fail and is in the canonical chain.
 // The blockHeight in the query is just to remove some of my testing and is not required.
 const query = gql`
 query getEvents {
-  zkapps(query: {zkappCommand: {accountUpdates: {body: {publicKey: "B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM"}}}, canonical: true, failureReason_exists: false, blockHeight_gte: 12969}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {
+  zkapps(query: {zkappCommand: {accountUpdates: {body: {publicKey: "B62qoDSzH2npmB1jC434dYdmw2gbHvhez2rfmzrj9a58RHe1DQLTgps"}}}, canonical: true, failureReason_exists: false}, sortBy: BLOCKHEIGHT_DESC, limit: 1000) {
     hash
     blockHeight
     zkappCommand {
