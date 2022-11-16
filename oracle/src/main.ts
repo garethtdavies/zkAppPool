@@ -31,7 +31,7 @@ import {
   );
   // ----------------------------------------------------
 
-  const zkAppAddress = PublicKey.fromBase58("B62qrEUV2vwh6N8dvvzymd5hykaBxkni1F8RZDMwUsLhxn7xhVz6o3x");
+  const zkAppAddress = PublicKey.fromBase58("B62qoDSzH2npmB1jC434dYdmw2gbHvhez2rfmzrj9a58RHe1DQLTgps");
   const zkAppInstance = new DelegationOracle(zkAppAddress);
 
   console.log('Compiling smart contract...');
