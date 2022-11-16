@@ -12,6 +12,12 @@
       "keyPath": "keys/oracle.json",
       "fee": "0.1",
       "smartContract": "DelegationOracle"
+    },
+    "redeploy": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/redeploy.json",
+      "fee": "0.1",
+      "smartContract": "DelegationOracle"
     }
   }
 }

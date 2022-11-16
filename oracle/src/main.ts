@@ -27,11 +27,11 @@ import {
 
   let transactionFee = 100_000_000;
   let feePayerPrivateKey = PrivateKey.fromBase58(
-    'EKF1WVvBi9NVwsnUYiHh272PeWLgiRwDQAJZ2dHxriKFNVcvsc4q'
+    'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
   // ----------------------------------------------------
 
-  const zkAppAddress = PublicKey.fromBase58("B62qmLWZfcbqrQPMky44w6K6Myj9aydbHKE5fG2N6wrXxFbkfEUWdRM");
+  const zkAppAddress = PublicKey.fromBase58("B62qrEUV2vwh6N8dvvzymd5hykaBxkni1F8RZDMwUsLhxn7xhVz6o3x");
   const zkAppInstance = new DelegationOracle(zkAppAddress);
 
   console.log('Compiling smart contract...');
@@ -58,14 +58,14 @@ import {
 
   console.log(data);
 
-  const epoch = UInt32.fromNumber(data.data.epoch);
+  const epoch = UInt32.from(data.data.epoch);
   const publicKey = PublicKey.fromBase58(data.data.publicKey);
   const producerKey = PublicKey.fromBase58(data.data.producerKey);
-  const blocksWon = UInt32.fromNumber(data.data.blocksWon);
-  const delegatedBalance = UInt64.fromNumber(data.data.delegatedBalance);
-  const totalDelegatedBalance = UInt64.fromNumber(data.data.totalDelegatedBalance);
-  const amountOwed = UInt64.fromNumber(data.data.amountOwed);
-  const amountSent = UInt64.fromNumber(data.data.amountSent);
+  const blocksWon = UInt32.from(data.data.blocksWon);
+  const delegatedBalance = UInt64.from(data.data.delegatedBalance);
+  const totalDelegatedBalance = UInt64.from(data.data.totalDelegatedBalance);
+  const amountOwed = UInt64.from(data.data.amountOwed);
+  const amountSent = UInt64.from(data.data.amountSent);
   const signature = Signature.fromJSON(data.signature);
 
   console.log("Creating the transaction");
@@ -90,7 +90,7 @@ import {
     );
 
     await transaction.prove();
-    await transaction.send().wait();
+    await transaction.send();
 
   } catch (error: any) {
     console.log("There was an issue creating the proof. Check the amount sent (" + amountSent + ") is greater than the amount owed (" + amountOwed + ")");
