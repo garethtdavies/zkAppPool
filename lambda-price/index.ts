@@ -38,9 +38,9 @@ exports.handler = async (event) => {
   });
 
   // This price is in dollars e.g. 0.635231 - we want in cents and then rounded to the nearest cent
-  const price = UInt32.fromNumber(Math.round(priceData["mina-protocol"].usd * 100));
-  const marketCap = UInt64.fromNumber(Math.round(priceData["mina-protocol"].usd_market_cap));
-  const lastUpdate = UInt64.fromNumber(priceData["mina-protocol"].last_updated_at);
+  const price = UInt32.from(Math.round(priceData["mina-protocol"].usd * 100));
+  const marketCap = UInt64.from(Math.round(priceData["mina-protocol"].usd_market_cap));
+  const lastUpdate = UInt64.from(priceData["mina-protocol"].last_updated_at);
 
   // Sign all the data
   const signedData = price.toFields().concat(marketCap.toFields()).concat(lastUpdate.toFields());

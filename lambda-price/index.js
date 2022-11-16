@@ -21,9 +21,9 @@ exports.handler = async (event) => {
         console.log(error);
     });
     // This price is in dollars e.g. 0.635231 - we want in cents and then rounded to the nearest cent
-    const price = snarkyjs_1.UInt32.fromNumber(Math.round(priceData["mina-protocol"].usd * 100));
-    const marketCap = snarkyjs_1.UInt64.fromNumber(Math.round(priceData["mina-protocol"].usd_market_cap));
-    const lastUpdate = snarkyjs_1.UInt64.fromNumber(priceData["mina-protocol"].last_updated_at);
+    const price = snarkyjs_1.UInt32.from(Math.round(priceData["mina-protocol"].usd * 100));
+    const marketCap = snarkyjs_1.UInt64.from(Math.round(priceData["mina-protocol"].usd_market_cap));
+    const lastUpdate = snarkyjs_1.UInt64.from(priceData["mina-protocol"].last_updated_at);
     // Sign all the data
     const signedData = price.toFields().concat(marketCap.toFields()).concat(lastUpdate.toFields());
     const signature = snarkyjs_1.Signature.create(privateKey, signedData);
