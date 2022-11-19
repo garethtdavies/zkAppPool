@@ -70,7 +70,7 @@ export class PoolPayout extends SmartContract {
   Mina.setActiveInstance(Local);
   const deployerAccount = Local.testAccounts[0].privateKey;
 
-  const zkAppPrivateKey = Local.testAccounts[1].privateKey;
+  const zkAppPrivateKey = Local.testAccounts[2].privateKey;
   const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
   const zkAppInstance = new PoolPayout(zkAppAddress);
@@ -88,7 +88,7 @@ export class PoolPayout extends SmartContract {
 
   // Add some test payouts
   let rewardFields: Rewards = [];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 5; i++) {
     rewardFields.push({
       index: UInt32.from(i),
       publicKey: PrivateKey.random().toPublicKey(),
@@ -100,7 +100,6 @@ export class PoolPayout extends SmartContract {
     let transaction = await Mina.transaction(
       { feePayerKey: deployerAccount, fee: 100_000_000 },
       () => {
-        AccountUpdate.fundNewAccount(deployerAccount);
         zkAppInstance.sendReward(rewardFields);
       }
     );
