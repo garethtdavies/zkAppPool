@@ -9,6 +9,7 @@ import {
   UInt32,
   UInt64,
   Signature,
+  AccountUpdate,
 } from 'snarkyjs';
 
 (async function main() {
@@ -50,7 +51,7 @@ import {
   });
 
   // Take a small slice to test batch sending payouts
-  let testData = data.rewards.slice(0, 2);
+  let testData = data.rewards.slice(0, 9);
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
@@ -74,9 +75,7 @@ import {
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
       () => {
-        rewardFields.forEach(function (value) {
-          zkAppInstance.sendReward(value);
-        });
+        zkAppInstance.sendReward(rewardFields);
       }
     );
 

@@ -39,7 +39,7 @@ export class Reward extends Struct({
 }
 
 export class Rewards2 extends Struct(
-  [Reward, Reward]) { }
+  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -62,9 +62,16 @@ export class PoolPayout extends SmartContract {
     super.deploy(args);
     this.setPermissions({
       ...Permissions.default(),
+      editSequenceState: Permissions.proofOrSignature(),
       editState: Permissions.proofOrSignature(),
+      incrementNonce: Permissions.proofOrSignature(),
+      receive: Permissions.proofOrSignature(),
       send: Permissions.proofOrSignature(),
       setDelegate: Permissions.impossible(),
+      setPermissions: Permissions.proofOrSignature(),
+      setTokenSymbol: Permissions.proofOrSignature(),
+      setVerificationKey: Permissions.proofOrSignature(),
+      setVotingFor: Permissions.proofOrSignature(),
       setZkappUri: Permissions.impossible(),
     });
 
@@ -77,63 +84,38 @@ export class PoolPayout extends SmartContract {
     // TODO emit an event for each payout?
   }
 
-  /*
   @method sendReward(accounts: Rewards2) {
 
     // Assert the validating key on chain
-    let oraclePublicKey = this.oraclePublicKey.get();
-    this.oraclePublicKey.assertEquals(oraclePublicKey);
 
-    // Assert the epoch
-    let currentEpoch = this.currentEpoch.get();
-    //currentEpoch.assertEquals(Field(39));
-    Circuit.log(currentEpoch);
-
-    let currentIndex = this.currentIndex.get();
-    Circuit.log(currentIndex);
-
-    for (let [_, value] of Object.entries(accounts)) {
-      this.send({
-        to: value.publicKey,
-        //amount: value.rewards,
-        amount: 1_000_000
-      });
-    };
-    // TODO lets send the correct amount when claimed
-  }
-  */
-
-  @method sendReward(account: Reward) {
-
-    // Assert the validating key on chain
     let oraclePublicKey = this.oraclePublicKey.get();
     this.oraclePublicKey.assertEquals(oraclePublicKey);
 
     // Assert the epoch
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(this.currentEpoch.get());
-    Circuit.log(currentEpoch);
 
     let currentIndex = this.currentIndex.get();
     this.currentIndex.assertEquals(this.currentIndex.get());
-    Circuit.log(currentIndex);
 
-    this.send({
-      to: account.publicKey,
-      //amount: account.rewards,
-      amount: 1_000_000
-    });
-
+    for (let [_, value] of Object.entries(accounts)) {
+      this.send({
+        to: value.publicKey,
+        amount: 1_000_000,
+      });
+    }
   }
 
   @method claimReward() {
     // TO IMPLEMENT
     // Can only claim rewards when all payouts have been sent for an epoch
     // This also updates the epoch to the next epoch, i.e. epoch is over...
+    // Can store a number for epoch rewards claimed
   }
 
   @method closeEpoch() {
     // maybe ensure everything claimed
+    // checks that the index is complete and then updates state to the next epoch index 0
   }
 
 }

@@ -1,0 +1,1046 @@
+mutation {
+  sendZkapp(input: {
+    zkappCommand: {
+  feePayer: {
+    body: {
+      publicKey: "B62qij84rwTzzTiompizumg46WFAGgQ7bss7ephB47xxag8oDaDsGhX",
+      fee: "100000000",
+      validUntil: null,
+      nonce: "2"
+    },
+    authorization: "7mXXgiK5th7Hue8qfkU7DQW9UN9184pgGzhxghpvHdGdP6hszNMWBvo18s2m2bZbMYTj6pRXWqi8pwezdcgfQGUhkrY6L6io"
+  },
+  accountUpdates: [
+    {
+      body: {
+        publicKey: "B62qn5oSwNZfK8bnsZoWLPeFATiBSvaNA68njLWCuh451sHRR77CEdw",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "5500000",
+          sgn: "Negative"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 0,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: {
+              lower: "2",
+              upper: "2"
+            },
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qmQsEHcsPUs5xdtHKjEmWqqhUPRSF2GNmdguqnNvpEZpKftPC69e",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "100000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qoSguyyq4HZxUvZ11XpYCdDUNj2kamPYxsB8htC6dmuRGoMT3xoe",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "200000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qrdBP6fwq3siFexMittg3C6n5iXJArysBsuYXbugmnm4N89nkLdc",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "300000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qmCMRUqWm7t2mz3omtPV6HjiCbtbvktMqLyNMWy8H2CrLcnfkm3H",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "400000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qjAv5XhWK315NP4uav1TFcTSfaNUymNJsMAeySWHTzmNaPTqT46A",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "500000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qobjtGGkU5jh6p8fEMxeLCzj9EMQx4WnaQ5HVdA43w5TBL6Ghb9a",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "600000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qiUe9CRCttdBsQzWpKqCZiiAMD85EebgLYKjwXAN5jhWPMuzUEPM",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "700000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qj5dnxafRpeSscUcygj13Q9EiKPj5B5rV3KorR6KoV5VcNfxvULH",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "800000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qs1invvKpB68RRUcDYSEXyuuhPrdwRocExkhMNZcMi4wediCswrN",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "900000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    },
+    {
+      body: {
+        publicKey: "B62qiqP9tB8uut1xMjKNH7EYEFViZoTJ8Lf34Z8YJPYvdHjE3JZwaaa",
+        tokenId: "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf",
+        update: {
+          appState: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          delegate: null,
+          verificationKey: null,
+          permissions: null,
+          zkappUri: null,
+          tokenSymbol: null,
+          timing: null,
+          votingFor: null
+        },
+        balanceChange: {
+          magnitude: "1000000",
+          sgn: "Positive"
+        },
+        incrementNonce: false,
+        events: [],
+        sequenceEvents: [],
+        callData: "0",
+        callDepth: 1,
+        preconditions: {
+          network: {
+            snarkedLedgerHash: null,
+            timestamp: null,
+            blockchainLength: null,
+            minWindowDensity: null,
+            totalCurrency: null,
+            globalSlotSinceHardFork: null,
+            globalSlotSinceGenesis: null,
+            stakingEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            },
+            nextEpochData: {
+              ledger: {
+                hash: null,
+                totalCurrency: null
+              },
+              seed: null,
+              startCheckpoint: null,
+              lockCheckpoint: null,
+              epochLength: null
+            }
+          },
+          account: {
+            balance: null,
+            nonce: null,
+            receiptChainHash: null,
+            delegate: null,
+            state: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            sequenceState: null,
+            provedState: null,
+            isNew: null
+          }
+        },
+        useFullCommitment: false,
+        caller: "xcs2s5WrNrLjxCQSK7CREcJC8KA81bu3LznMBFiVHHvBKnCqmA",
+        authorizationKind: "None_given"
+      },
+      authorization: {
+        proof: null,
+        signature: null
+      }
+    }
+  ],
+  memo: "E4Z8FH7jhkPdizu9toKDXHueP2uGt5HTg4dY86D1ieBkZPJHgP6aM"
+}
+  }) {
+    zkapp {
+      hash
+      id
+      failureReason {
+        failures
+        index
+      }
+      zkappCommand {
+        memo
+        feePayer {
+          body {
+            publicKey
+          }
+        }
+        accountUpdates {
+          body {
+            publicKey
+            useFullCommitment
+            incrementNonce
+          }
+        }
+      }
+    }
+  }
+}
