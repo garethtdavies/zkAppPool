@@ -11,8 +11,6 @@ import {
   UInt32,
   Struct,
   isReady,
-  PrivateKey,
-  AccountUpdate,
   shutdown,
   state,
   State,
@@ -28,7 +26,7 @@ export class Reward extends Struct({
 }) { }
 
 export class Rewards extends Struct(
-  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
+  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -68,9 +66,9 @@ export class PoolPayout extends SmartContract {
 
   const Local = Mina.LocalBlockchain();
   Mina.setActiveInstance(Local);
-  const deployerAccount = Local.testAccounts[0].privateKey;
+  const deployerAccount = Local.testAccounts[8].privateKey;
 
-  const zkAppPrivateKey = Local.testAccounts[2].privateKey;
+  const zkAppPrivateKey = Local.testAccounts[9].privateKey;
   const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
   const zkAppInstance = new PoolPayout(zkAppAddress);
@@ -86,12 +84,14 @@ export class PoolPayout extends SmartContract {
   deploy_txn.sign([zkAppPrivateKey]);
   await deploy_txn.send();
 
+  console.log("Deployed");
+
   // Add some test payouts
   let rewardFields: Rewards = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 8; i++) {
     rewardFields.push({
       index: UInt32.from(i),
-      publicKey: PrivateKey.random().toPublicKey(),
+      publicKey: Local.testAccounts[i].privateKey.toPublicKey(),
       rewards: UInt64.from(5_000_000_000),
     });
   }
