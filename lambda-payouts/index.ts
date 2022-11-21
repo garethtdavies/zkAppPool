@@ -92,24 +92,18 @@ exports.handler = async (event) => {
   // Define the type that our function (and API) will return
   type Data = {
     rewards: Reward[];
-    data: EpochData;
-    signature: Signature;
     publicKey: PublicKey;
   };
-
-  type EpochData = {
-    "epoch": UInt32;
-    "confirmed": Bool;
-    "poolBalance": UInt64;
-    "totalRewards": UInt64;
-    "numDelegators": UInt32;
-  }
 
   type Reward = {
     "index": UInt32;
     "publicKey": PublicKey;
     "delegatingBalance": UInt64;
     "rewards": UInt64;
+    "epoch": UInt32;
+    "signature": Signature;
+    "confirmed": Bool;
+    "feePayout": Bool;
   };
 
   // get the event from Lambda URI
@@ -196,23 +190,29 @@ exports.handler = async (event) => {
   // Anyone who is in this list will be getting a reward, asssuming above 0
   stakingData.forEach((staker) => {
 
-    // Can we do this 
-
     let delegatingKey = staker.public_key;
     // Convert to nanomina and force to an int
     let delegatingBalance = staker.balance;
 
-    // Determine individula staking rewards based on percentage of pool
+    // Determine individual staking rewards based on percentage of pool
     let rewards = Math.trunc((delegatingBalance / poolBalance) * totalPoolToShare);
+
+    // For all stakers feePayout is false
+    let feePayout = Bool(false);
 
     // Format 
     const indexToField = UInt32.from(index);
     const publicKeyToField = PublicKey.fromBase58(delegatingKey);
     const delegatingBalanceToField = UInt64.from(Math.trunc(delegatingBalance * 1000000000));
     const rewardsToField = UInt64.from(rewards);
+    const epochToField = UInt32.from(epochEvent);
+    const confirmedToField = Bool(minConfirmations);
 
     // Concat the fields to sign all this data
-    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields());
+    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(feePayout.toFields());
+
+    // Sign it with the oracle public key
+    const signature = Signature.create(privateKey, signedData);
 
     // Add this to our response
     outputArray.push({
@@ -220,35 +220,35 @@ exports.handler = async (event) => {
       "publicKey": publicKeyToField,
       "delegatingBalance": delegatingBalanceToField,
       "rewards": rewardsToField,
+      "epoch": epochToField,
+      "signature": signature,
+      "confirmed": confirmedToField,
+      "feePayout": feePayout,
     });
-
-    // TODO need confirmations here to enforce you can't run this without blocks confirming
 
     index++;
   });
 
-  const epochToField = UInt32.from(epochEvent);
-  const confirmedToField = Bool(minConfirmations);
-  const poolBalanceToField = UInt64.from(Math.trunc(poolBalance * 1000000000));
-  const totalRewards = UInt64.from(totalPoolToShare);
-  const numDelegatorsFields = UInt32.from(numDelegators);
+  // We will make the fee payout the last payout and if true we can bump the epoch
+  signedData = signedData.concat(UInt32.from(index).toFields()).concat(PublicKey.fromBase58("B62qiUt6Wf9JTtVUpiHtzcobznPr7dj7V3LZxcP3mn2T1xqNprsQFbb").toFields()).concat(UInt64.from(0).toFields()).concat(UInt64.from(totalPoolToShare).toFields()).concat(UInt32.from(epochEvent).toFields()).concat(Bool(minConfirmations).toFields()).concat(Bool(true).toFields());
 
-  // Sign the additional metadata
-  signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegatorsFields.toFields());
-
-  // Sign it with the oracle public key
   const signature = Signature.create(privateKey, signedData);
 
+  outputArray.push(
+    {
+      "index": UInt32.from(index),
+      "publicKey": PublicKey.fromBase58("B62qiUt6Wf9JTtVUpiHtzcobznPr7dj7V3LZxcP3mn2T1xqNprsQFbb"),
+      "delegatingBalance": UInt64.from(0),
+      "rewards": UInt64.from(totalPoolToShare),
+      "epoch": UInt32.from(epochEvent),
+      "signature": signature,
+      "confirmed": Bool(minConfirmations),
+      "feePayout": Bool(true),
+    }
+  )
+
   const data: Data = {
-    data: {
-      "epoch": epochToField,
-      "confirmed": confirmedToField,
-      "poolBalance": poolBalanceToField,
-      "totalRewards": totalRewards,
-      "numDelegators": numDelegatorsFields,
-    },
     rewards: outputArray,
-    signature: signature,
     publicKey: signingKey,
   };
 
@@ -256,6 +256,8 @@ exports.handler = async (event) => {
     statusCode: 200,
     body: JSON.stringify(data),
   };
+
+  //console.log(response);
 
   return response;
 };
