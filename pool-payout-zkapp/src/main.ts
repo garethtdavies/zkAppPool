@@ -62,7 +62,8 @@ import {
   });
 
   // Take a small slice to test batch sending payouts
-  let testData = data.rewards.slice(0, 9);
+  // This overflows if more than 4 rewards included
+  let testData = data.rewards.slice(0, 4);
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
@@ -75,15 +76,14 @@ import {
     rewardFields.push({
       index: Field(element.index),
       publicKey: PublicKey.fromBase58(element.publicKey),
-      delegatingBalance: UInt64.from(element.delegatingBalance),
       rewards: UInt64.from(element.rewards),
       epoch: Field(element.epoch),
-      //signature: Signature.fromJSON(element.signature),
+      signature: Signature.fromJSON(element.signature),
       confirmed: Bool(element.confirmed)
     });
   });
 
-  // console.log(rewardFields.length);
+  console.log(rewardFields.length);
   // TODO check if length is less than 9 if so pad the length until it is
 
   try {

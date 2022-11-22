@@ -33,16 +33,15 @@ const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEt
 export class Reward extends Struct({
   index: Field,
   publicKey: PublicKey,
-  delegatingBalance: UInt64,
   rewards: UInt64,
   epoch: Field,
-  //signature: Signature,
+  signature: Signature,
   confirmed: Bool
 }) { // Have the data concatenated here?
 }
 
 export class Rewards2 extends Struct(
-  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
+  [Reward, Reward, Reward, Reward]) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -168,10 +167,9 @@ export class PoolPayout extends SmartContract {
 
       // Increment the index
       currentIndex.add(1);
-
-      // Now update the index
-      this.currentIndex.set(currentIndex);
-
     }
+
+    // Now update the index
+    this.currentIndex.set(currentIndex);
   }
 }
