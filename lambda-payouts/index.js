@@ -84,6 +84,9 @@ exports.handler = async (event) => {
     // get the event from Lambda URI
     const eventKey = event.queryStringParameters.publicKey;
     const epochEvent = event.queryStringParameters.epoch;
+    // DEBUG
+    //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
+    //const epochEvent = 39;
     // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
     const privateKey = snarkyjs_1.PrivateKey.fromBase58("EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53");
     // We compute the public key associated with our private key
@@ -118,7 +121,7 @@ exports.handler = async (event) => {
     console.log("The pool balance is " + poolBalance);
     /* Simplest payout algorithm - can tweak this later
     /* Assuming no supercharged rewards moving forward
-    /* We'll just split the coinbase for each block
+    /* We'll just split the total rewards for each block
     */
     let coinbaseRewards = 0;
     let txRewards = 0;
@@ -139,53 +142,61 @@ exports.handler = async (event) => {
     var signedData = [];
     // Anyone who is in this list will be getting a reward, asssuming above 0
     stakingData.forEach((staker) => {
-        // Can we do this 
         let delegatingKey = staker.public_key;
         // Convert to nanomina and force to an int
         let delegatingBalance = staker.balance;
-        // Determine individula staking rewards based on percentage of pool
+        // Determine individual staking rewards based on percentage of pool
         let rewards = Math.trunc((delegatingBalance / poolBalance) * totalPoolToShare);
+        // For all stakers feePayout is false
+        let feePayout = (0, snarkyjs_1.Bool)(false);
         // Format 
         const indexToField = snarkyjs_1.UInt32.from(index);
         const publicKeyToField = snarkyjs_1.PublicKey.fromBase58(delegatingKey);
         const delegatingBalanceToField = snarkyjs_1.UInt64.from(Math.trunc(delegatingBalance * 1000000000));
         const rewardsToField = snarkyjs_1.UInt64.from(rewards);
+        const epochToField = snarkyjs_1.UInt32.from(epochEvent);
+        const confirmedToField = (0, snarkyjs_1.Bool)(minConfirmations);
         // Concat the fields to sign all this data
-        signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields());
+        signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields());
+        // Sign it with the oracle public key
+        const signature = snarkyjs_1.Signature.create(privateKey, signedData);
         // Add this to our response
         outputArray.push({
             "index": indexToField,
             "publicKey": publicKeyToField,
             "delegatingBalance": delegatingBalanceToField,
             "rewards": rewardsToField,
+            "epoch": epochToField,
+            "signature": signature,
+            "confirmed": confirmedToField,
         });
-        // TODO need confirmations here to enforce you can't run this without blocks confirming
         index++;
     });
+    // Add data for the fee payout
+    const indexToField = snarkyjs_1.UInt32.from(index);
     const epochToField = snarkyjs_1.UInt32.from(epochEvent);
-    const confirmedToField = (0, snarkyjs_1.Bool)(minConfirmations);
-    const poolBalanceToField = snarkyjs_1.UInt64.from(Math.trunc(poolBalance * 1000000000));
-    const totalRewards = snarkyjs_1.UInt64.from(totalPoolToShare);
-    const numDelegatorsFields = snarkyjs_1.UInt32.from(numDelegators);
-    // Sign the additional metadata
-    signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegatorsFields.toFields());
-    // Sign it with the oracle public key
+    const numDelegatesToField = snarkyjs_1.UInt32.from(numDelegators);
+    const payoutToField = snarkyjs_1.UInt64.from(totalPoolToShare);
+    const publicKeyToField = snarkyjs_1.PublicKey.fromBase58("B62qoeik6jNZapnxHeYaF4sJMEq6LccCJ6cscm2ZoHNmX5UcQREF7H3");
+    signedData = indexToField.toFields().concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields()).concat(publicKeyToField.toFields());
     const signature = snarkyjs_1.Signature.create(privateKey, signedData);
+    const feePayout = {
+        "index": indexToField,
+        "epoch": epochToField,
+        "numDelegates": numDelegatesToField,
+        "payout": payoutToField,
+        "payoutAddress": publicKeyToField,
+        "signature": signature,
+    };
     const data = {
-        data: {
-            "epoch": epochToField,
-            "confirmed": confirmedToField,
-            "poolBalance": poolBalanceToField,
-            "totalRewards": totalRewards,
-            "numDelegators": numDelegatorsFields,
-        },
         rewards: outputArray,
-        signature: signature,
+        feePayout: feePayout,
         publicKey: signingKey,
     };
     const response = {
         statusCode: 200,
         body: JSON.stringify(data),
     };
+    //console.log(response);
     return response;
 };

@@ -92,29 +92,36 @@ exports.handler = async (event) => {
   // Define the type that our function (and API) will return
   type Data = {
     rewards: Reward[];
-    data: EpochData;
-    signature: Signature;
+    feePayout: FeePayout;
     publicKey: PublicKey;
   };
-
-  type EpochData = {
-    "epoch": UInt32;
-    "confirmed": Bool;
-    "poolBalance": UInt64;
-    "totalRewards": UInt64;
-    "numDelegators": UInt32;
-  }
 
   type Reward = {
     "index": UInt32;
     "publicKey": PublicKey;
     "delegatingBalance": UInt64;
     "rewards": UInt64;
+    "epoch": UInt32;
+    "confirmed": Bool;
+    "signature": Signature;
   };
+
+  type FeePayout = {
+    "index": UInt32;
+    "epoch": UInt32;
+    "numDelegates": UInt32; // Need to know when we can make a payout - can make this an onchain state var
+    "payout": UInt64;
+    "payoutAddress": PublicKey;
+    "signature": Signature;
+  }
 
   // get the event from Lambda URI
   const eventKey = event.queryStringParameters.publicKey;
   const epochEvent = event.queryStringParameters.epoch;
+
+  // DEBUG
+  //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
+  //const epochEvent = 39;
 
   // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
   const privateKey = PrivateKey.fromBase58(
@@ -165,7 +172,7 @@ exports.handler = async (event) => {
 
   /* Simplest payout algorithm - can tweak this later
   /* Assuming no supercharged rewards moving forward
-  /* We'll just split the coinbase for each block
+  /* We'll just split the total rewards for each block
   */
 
   let coinbaseRewards = 0;
@@ -196,23 +203,29 @@ exports.handler = async (event) => {
   // Anyone who is in this list will be getting a reward, asssuming above 0
   stakingData.forEach((staker) => {
 
-    // Can we do this 
-
     let delegatingKey = staker.public_key;
     // Convert to nanomina and force to an int
     let delegatingBalance = staker.balance;
 
-    // Determine individula staking rewards based on percentage of pool
+    // Determine individual staking rewards based on percentage of pool
     let rewards = Math.trunc((delegatingBalance / poolBalance) * totalPoolToShare);
+
+    // For all stakers feePayout is false
+    let feePayout = Bool(false);
 
     // Format 
     const indexToField = UInt32.from(index);
     const publicKeyToField = PublicKey.fromBase58(delegatingKey);
     const delegatingBalanceToField = UInt64.from(Math.trunc(delegatingBalance * 1000000000));
     const rewardsToField = UInt64.from(rewards);
+    const epochToField = UInt32.from(epochEvent);
+    const confirmedToField = Bool(minConfirmations);
 
     // Concat the fields to sign all this data
-    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields());
+    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields());
+
+    // Sign it with the oracle public key
+    const signature = Signature.create(privateKey, signedData);
 
     // Add this to our response
     outputArray.push({
@@ -220,35 +233,36 @@ exports.handler = async (event) => {
       "publicKey": publicKeyToField,
       "delegatingBalance": delegatingBalanceToField,
       "rewards": rewardsToField,
+      "epoch": epochToField,
+      "signature": signature,
+      "confirmed": confirmedToField,
     });
-
-    // TODO need confirmations here to enforce you can't run this without blocks confirming
 
     index++;
   });
 
+  // Add data for the fee payout
+  const indexToField = UInt32.from(index);
   const epochToField = UInt32.from(epochEvent);
-  const confirmedToField = Bool(minConfirmations);
-  const poolBalanceToField = UInt64.from(Math.trunc(poolBalance * 1000000000));
-  const totalRewards = UInt64.from(totalPoolToShare);
-  const numDelegatorsFields = UInt32.from(numDelegators);
+  const numDelegatesToField = UInt32.from(numDelegators);
+  const payoutToField = UInt64.from(totalPoolToShare);
+  const publicKeyToField = PublicKey.fromBase58("B62qoeik6jNZapnxHeYaF4sJMEq6LccCJ6cscm2ZoHNmX5UcQREF7H3");
 
-  // Sign the additional metadata
-  signedData.concat(epochToField.toFields()).concat(confirmedToField.toFields()).concat(poolBalanceToField.toFields()).concat(totalRewards.toFields()).concat(numDelegatorsFields.toFields());
-
-  // Sign it with the oracle public key
+  signedData = indexToField.toFields().concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields()).concat(publicKeyToField.toFields());
   const signature = Signature.create(privateKey, signedData);
 
+  const feePayout: FeePayout = {
+    "index": indexToField,
+    "epoch": epochToField,
+    "numDelegates": numDelegatesToField, // Need to know when we can make a payout - can make this an onchain state var
+    "payout": payoutToField,
+    "payoutAddress": publicKeyToField,
+    "signature": signature,
+  }
+
   const data: Data = {
-    data: {
-      "epoch": epochToField,
-      "confirmed": confirmedToField,
-      "poolBalance": poolBalanceToField,
-      "totalRewards": totalRewards,
-      "numDelegators": numDelegatorsFields,
-    },
     rewards: outputArray,
-    signature: signature,
+    feePayout: feePayout,
     publicKey: signingKey,
   };
 
@@ -256,6 +270,8 @@ exports.handler = async (event) => {
     statusCode: 200,
     body: JSON.stringify(data),
   };
+
+  //console.log(response);
 
   return response;
 };
