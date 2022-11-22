@@ -1,6 +1,12 @@
 {
   "version": 1,
   "networks": {
+    "1": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/1.json",
+      "fee": "0.1",
+      "smartContract": "PoolPayout"
+    },
     "oracle": {
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/oracle.json",
