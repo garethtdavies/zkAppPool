@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "locally": "node -e \"console.log(require('./index').handler(require('./event.json')));\""
+    "locally": "node -e \"console.log(require('./index'));\""
   },
   "repository": {
     "type": "git",
@@ -20,7 +20,7 @@
   "dependencies": {
     "graphql": "^16.6.0",
     "graphql-request": "^5.0.0",
-    "snarkyjs": "^0.7.1"
+    "snarkyjs": "^0.7.2"
   },
   "devDependencies": {
     "@types/node": "^18.11.7"
