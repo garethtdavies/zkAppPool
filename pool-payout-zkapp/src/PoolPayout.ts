@@ -107,7 +107,7 @@ export class PoolPayout extends SmartContract {
   */
 
 
-  @method sendReward(accounts: Rewards2) {
+  @method sendReward(accounts: Rewards2, epoch: Field, index: Field) {
 
     // This method loops through 9 payouts and sends tham.
     // It needs to validate the index, the epoch and the signature
@@ -116,13 +116,13 @@ export class PoolPayout extends SmartContract {
     // TODO this always returns 0
 
     // get the current epoch
-    const currentEpoch = this.currentEpoch.get();
-    this.currentEpoch.assertEquals(currentEpoch);
-    Circuit.log(currentEpoch);
+    //const currentEpoch = this.currentEpoch.get();
+    this.currentEpoch.assertEquals(epoch);
+    Circuit.log(epoch);
+    Circuit.log(this.currentEpoch);
 
     // get the current index
-    const currentIndex = this.currentIndex.get();
-    this.currentIndex.assertEquals(currentIndex);
+    this.currentIndex.assertEquals(index);
     //Circuit.log(currentIndex);
 
     // get the current fee
@@ -150,10 +150,10 @@ export class PoolPayout extends SmartContract {
       //validSignature.assertTrue();
 
       // Assert the index is the same as the current index
-      //value.index.assertEquals(currentIndex, 'The current index must match the payout');
+      index.assertEquals(value.index);
 
       // Assert the epoch is correct
-      //value.epoch.assertEquals(currentEpoch, 'The current epoch must match the payout');
+      this.currentEpoch.assertEquals(value.epoch);
 
       // calculate the rewards
       const payout = value.rewards.mul(95).div(100).div(1000); // Temp make this smaller as easier to pay
@@ -166,10 +166,10 @@ export class PoolPayout extends SmartContract {
       });
 
       // Increment the index
-      currentIndex.add(1);
+      index = index.add(1);
     }
 
     // Now update the index
-    this.currentIndex.set(currentIndex);
+    //this.currentIndex.set(index);
   }
 }

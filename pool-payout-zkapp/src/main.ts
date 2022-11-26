@@ -23,7 +23,7 @@ import {
   console.log('SnarkyJS loaded');
 
   // Connect to Berkeley
-  const Berkeley = Mina.BerkeleyQANet(
+  const Berkeley = Mina.Network(
     'https://proxy.berkeley.minaexplorer.com/graphql'
   );
   Mina.setActiveInstance(Berkeley);
@@ -33,7 +33,7 @@ import {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qihz5QxyK8C93KAUxvv1fXB1fdirWA5tj4QUhboenxhGtjp7ipm3");
+  const zkAppAddress = PublicKey.fromBase58("B62qkgSWQkoucJKQ7EVcE3RzmiAJg6e5tUtgATqcJAoARyLZoi14Ff7");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
@@ -42,6 +42,9 @@ import {
   } catch(error) {
     console.log(error);
   }
+
+  // Prime the cache
+
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
   // Why? Because we want to sign these all offline and get more than 1 tx in a block
@@ -87,10 +90,11 @@ import {
   // TODO check if length is less than 9 if so pad the length until it is
 
   try {
+    //await Mina.getAccount(zkAppAddress);
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
       () => {
-        zkAppInstance.sendReward(rewardFields);
+        zkAppInstance.sendReward(rewardFields, Field(39), Field(0));
       }
     );
 
