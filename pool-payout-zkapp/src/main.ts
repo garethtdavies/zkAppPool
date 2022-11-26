@@ -1,6 +1,6 @@
 //https://berkeley.minaexplorer.com/transaction/CkpaG8iqhthWpvMhUCcJG6n51ojPJaQLbwKGMQMJfFMabaF3b9XKE
 
-import { PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
+import { PoolPayout, Reward} from './PoolPayout.js';
 
 import {
   isReady,
@@ -14,6 +14,7 @@ import {
   AccountUpdate,
   Bool,
   Field,
+  fetchAccount,
 } from 'snarkyjs';
 
 (async function main() {
@@ -43,11 +44,8 @@ import {
     console.log(error);
   }
 
-  // Prime the cache
-
-
-  // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
-  // Why? Because we want to sign these all offline and get more than 1 tx in a block
+  // Prime the cache as otherwise this falls over
+  await fetchAccount({publicKey: zkAppAddress});
 
   // Function URL
   let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39"
@@ -64,37 +62,26 @@ import {
     console.log(error)
   });
 
-  // Take a small slice to test batch sending payouts
-  // This overflows if more than 4 rewards included
-  let testData = data.rewards.slice(0, 4);
+  // Take 1 for a proof of concept
+  let testData = data.rewards.slice(0, 1);
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
-  //console.log(testData);
-
-  let rewardFields: Rewards2 = [];
-
   // Now we have to convert this to Fields
-  testData.forEach((element) => {
-    rewardFields.push({
-      index: Field(element.index),
-      publicKey: PublicKey.fromBase58(element.publicKey),
-      rewards: UInt64.from(element.rewards),
-      epoch: Field(element.epoch),
-      signature: Signature.fromJSON(element.signature),
-      confirmed: Bool(element.confirmed)
-    });
-  });
-
-  console.log(rewardFields.length);
-  // TODO check if length is less than 9 if so pad the length until it is
+  let passedData : Reward =  {
+      index: Field(testData[0].index),
+      publicKey: PublicKey.fromBase58(testData[0].publicKey),
+      rewards: UInt64.from(testData[0].rewards),
+      epoch: Field(testData[0].epoch),
+      signature: Signature.fromJSON(testData[0].signature),
+      confirmed: Bool(testData[0].confirmed)
+    }
 
   try {
-    //await Mina.getAccount(zkAppAddress);
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
       () => {
-        zkAppInstance.sendReward(rewardFields, Field(39), Field(0));
+        zkAppInstance.sendReward(passedData);
       }
     );
 

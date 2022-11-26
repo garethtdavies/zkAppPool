@@ -40,9 +40,6 @@ export class Reward extends Struct({
 }) { // Have the data concatenated here?
 }
 
-export class Rewards2 extends Struct(
-  [Reward, Reward, Reward, Reward]) { }
-
 export class PoolPayout extends SmartContract {
 
   // What state variables do we need to store
@@ -86,52 +83,28 @@ export class PoolPayout extends SmartContract {
     this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
 
-    // TODO emit an event for each payout?
   }
 
-  /*
-  init() {
-    super.init();
-    this.setPermissions({
-      ...Permissions.default(),
-      editState: Permissions.proofOrSignature(),
-      incrementNonce: Permissions.proofOrSignature(),
-      send: Permissions.proofOrSignature(),
-    });
-    this.currentEpoch.set(Field(39));
-    this.currentIndex.set(Field(0));
-    this.feePercentage.set(UInt32.from(5));
-    this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
-    this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
-  }
-  */
-
-
-  @method sendReward(accounts: Rewards2, epoch: Field, index: Field) {
+  @method sendReward(account: Reward) {
 
     // This method loops through 9 payouts and sends tham.
     // It needs to validate the index, the epoch and the signature
     // only update the index if not a dummy entry
 
-    // TODO this always returns 0
-
     // get the current epoch
-    //const currentEpoch = this.currentEpoch.get();
-    this.currentEpoch.assertEquals(epoch);
-    Circuit.log(epoch);
-    Circuit.log(this.currentEpoch);
+    let currentEpoch = this.currentEpoch.get();
+    this.currentEpoch.assertEquals(currentEpoch);
 
     // get the current index
-    this.currentIndex.assertEquals(index);
-    //Circuit.log(currentIndex);
+    let currentIndex = this.currentIndex.get();
+    this.currentIndex.assertEquals(this.currentIndex.get());
 
     // get the current fee
-    const feePercentage = this.feePercentage.get();
-    //Circuit.log(feePercentage);
-    this.feePercentage.assertEquals(feePercentage);
+    let feePercentage = this.feePercentage.get();
+    this.feePercentage.assertEquals(this.feePercentage.get());
 
     // Assert the validating key on chain
-    const oraclePublicKey = this.oraclePublicKey.get();
+    let oraclePublicKey = this.oraclePublicKey.get();
     this.oraclePublicKey.assertEquals(oraclePublicKey);
     //Circuit.log("Oracle public key" + oraclePublicKey);
 
@@ -139,37 +112,22 @@ export class PoolPayout extends SmartContract {
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorPublicKey);
 
-    for (let [_, value] of Object.entries(accounts)) {
+    // Assert the index is the same as the current index
+    account.index.assertEquals(currentIndex, "The index must match");
 
-      // First thing we do is validate the signature.
-      // This ensures that the data came from the oracle
+    // Assert the epoch is correct
+    account.epoch.assertEquals(currentEpoch, "The epoch must match");
 
-      //const validSignature = signature.verify(oraclePublicKey, signedData);
+    // calculate the rewards
+    let payout = account.rewards.mul(95).div(100).div(1000); // Temp make this smaller as easier to pay
+    payout.assertLte(account.rewards);
 
-      // Check that the signature is valid
-      //validSignature.assertTrue();
+    this.currentIndex.set(account.index.add(1));
 
-      // Assert the index is the same as the current index
-      index.assertEquals(value.index);
-
-      // Assert the epoch is correct
-      this.currentEpoch.assertEquals(value.epoch);
-
-      // calculate the rewards
-      const payout = value.rewards.mul(95).div(100).div(1000); // Temp make this smaller as easier to pay
-      payout.assertLte(value.rewards);
-
-      // If we made it this far we can send the 
-      this.send({
-        to: value.publicKey,
-        amount: payout
-      });
-
-      // Increment the index
-      index = index.add(1);
-    }
-
-    // Now update the index
-    //this.currentIndex.set(index);
+    // If we made it this far we can send the 
+    this.send({
+      to: account.publicKey,
+      amount: payout
+    });
   }
 }
