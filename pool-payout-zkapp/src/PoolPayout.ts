@@ -33,6 +33,7 @@ const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEt
 export class Reward extends Struct({
   index: Field,
   publicKey: PublicKey,
+  delegatingBalance: UInt64,
   rewards: UInt64,
   epoch: Field,
   signature: Signature,
@@ -88,9 +89,6 @@ export class PoolPayout extends SmartContract {
   @method sendReward(account: Reward) {
 
     // This method simplifies and only sends one payout
-
-    // validate the oracle signature
-
     // get the current epoch
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(currentEpoch);
@@ -112,6 +110,14 @@ export class PoolPayout extends SmartContract {
     // get the current validator
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorPublicKey);
+
+    // validate the oracle signature
+    const signedData = account.index.toFields().concat(account.publicKey.toFields().concat(account.delegatingBalance.toFields().concat(account.rewards.toFields()).concat(account.epoch.toFields()).concat(account.confirmed.toFields())));
+
+    const validSignature = account.signature.verify(oraclePublicKey, signedData);
+
+    // Check that the signature is valid
+    validSignature.assertTrue();
 
     // Assert the index is the same as the current index
     account.index.assertEquals(currentIndex, "The index must match");
@@ -135,5 +141,7 @@ export class PoolPayout extends SmartContract {
   @method closeEpoch() {
     // Validate oracle data
     // Check that index == number of delegators (via oracle)
+    // Send payout to the pool operator
+    // Update on chain state for epoch and reset index
   }
 }

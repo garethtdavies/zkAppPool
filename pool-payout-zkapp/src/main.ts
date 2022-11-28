@@ -52,6 +52,9 @@ import {
 
   console.log(functionUrl);
 
+  // Need to keep manual track of the nonces and current index so we can process many tx in a block
+  let index = 1;
+
   // Make the API call
   const data = await fetch(functionUrl).then((response) => {
     if (response.ok) {
@@ -63,7 +66,7 @@ import {
   });
 
   // Take 1 for a proof of concept
-  let testData = data.rewards.slice(0, 1);
+  let testData = data.rewards.slice(index, 1);
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
@@ -71,6 +74,7 @@ import {
   let passedData : Reward =  {
       index: Field(testData[0].index),
       publicKey: PublicKey.fromBase58(testData[0].publicKey),
+      delegatingBalance: UInt64.from(testData[0].delegatingBalance),
       rewards: UInt64.from(testData[0].rewards),
       epoch: Field(testData[0].epoch),
       signature: Signature.fromJSON(testData[0].signature),
