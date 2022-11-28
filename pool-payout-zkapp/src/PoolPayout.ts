@@ -56,7 +56,7 @@ export class PoolPayout extends SmartContract {
   // The Oracle public key (takes 2)
   @state(PublicKey) oraclePublicKey = State<PublicKey>();
 
-  // Validator key
+  // Validator key (takes 2)
   @state(PublicKey) validatorPublicKey = State<PublicKey>();
 
   deploy(args: DeployArgs) {
@@ -76,7 +76,7 @@ export class PoolPayout extends SmartContract {
       setZkappUri: Permissions.impossible(),
     });
 
-    // Move this to an init() method
+    // Move this to an init() method but for debugging useful to redeploy
     this.currentEpoch.set(Field(39));
     this.currentIndex.set(Field(0));
     this.feePercentage.set(UInt32.from(5));
@@ -87,21 +87,22 @@ export class PoolPayout extends SmartContract {
 
   @method sendReward(account: Reward) {
 
-    // This method loops through 9 payouts and sends tham.
-    // It needs to validate the index, the epoch and the signature
-    // only update the index if not a dummy entry
+    // This method simplifies and only sends one payout
+
+    // validate the oracle signature
 
     // get the current epoch
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(currentEpoch);
+    Circuit.log(currentEpoch);
 
     // get the current index
     let currentIndex = this.currentIndex.get();
-    this.currentIndex.assertEquals(this.currentIndex.get());
+    this.currentIndex.assertEquals(currentIndex);
 
     // get the current fee
     let feePercentage = this.feePercentage.get();
-    this.feePercentage.assertEquals(this.feePercentage.get());
+    this.feePercentage.assertEquals(feePercentage);
 
     // Assert the validating key on chain
     let oraclePublicKey = this.oraclePublicKey.get();
@@ -122,12 +123,17 @@ export class PoolPayout extends SmartContract {
     let payout = account.rewards.mul(95).div(100).div(1000); // Temp make this smaller as easier to pay
     payout.assertLte(account.rewards);
 
-    this.currentIndex.set(account.index.add(1));
-
     // If we made it this far we can send the 
     this.send({
       to: account.publicKey,
       amount: payout
     });
+
+    this.currentIndex.set(currentIndex.add(1));
+  }
+
+  @method closeEpoch() {
+    // Validate oracle data
+    // Check that index == number of delegators (via oracle)
   }
 }

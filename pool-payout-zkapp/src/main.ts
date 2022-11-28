@@ -34,7 +34,7 @@ import {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qkgSWQkoucJKQ7EVcE3RzmiAJg6e5tUtgATqcJAoARyLZoi14Ff7");
+  const zkAppAddress = PublicKey.fromBase58("B62qihz5QxyK8C93KAUxvv1fXB1fdirWA5tj4QUhboenxhGtjp7ipm3");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
