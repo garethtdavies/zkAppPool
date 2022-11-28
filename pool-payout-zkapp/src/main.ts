@@ -66,7 +66,8 @@ import {
   });
 
   // Take 1 for a proof of concept
-  let testData = data.rewards.slice(index, 1);
+  let testData = data.rewards.slice(index, index+1);
+  console.log(testData);
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 

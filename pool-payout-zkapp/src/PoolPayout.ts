@@ -97,6 +97,7 @@ export class PoolPayout extends SmartContract {
     // get the current index
     let currentIndex = this.currentIndex.get();
     this.currentIndex.assertEquals(currentIndex);
+    Circuit.log(currentIndex);
 
     // get the current fee
     let feePercentage = this.feePercentage.get();
@@ -117,7 +118,7 @@ export class PoolPayout extends SmartContract {
     const validSignature = account.signature.verify(oraclePublicKey, signedData);
 
     // Check that the signature is valid
-    validSignature.assertTrue();
+    //validSignature.assertTrue();
 
     // Assert the index is the same as the current index
     account.index.assertEquals(currentIndex, "The index must match");
