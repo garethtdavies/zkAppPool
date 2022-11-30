@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "ES2019",
     "module": "es2022",
     "lib": ["dom", "esnext"],
     "outDir": "./build",
     "rootDir": ".",
     "strict": true,
+    "strictNullChecks": false,
     "noImplicitAny": false,
     "strictPropertyInitialization": false, // to enable generic constructors, e.g. on CircuitValue
     "skipLibCheck": true,
@@ -16,7 +17,7 @@
     "emitDecoratorMetadata": true,
     "allowJs": true,
     "declaration": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true

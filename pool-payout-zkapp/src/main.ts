@@ -57,6 +57,9 @@ import {
   console.log(functionUrl);
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
+  // Need to track these manually offline
+  let feePayerNonce = 466;
+  let zkAppAddressNonce = 2;
   let index = 9;
 
   // Make the API call
@@ -97,6 +100,7 @@ import {
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
       () => {
+        //AccountUpdate.fundNewAccount(feePayerPrivateKey);
         zkAppInstance.sendReward(rewardFields);
       }
     );
