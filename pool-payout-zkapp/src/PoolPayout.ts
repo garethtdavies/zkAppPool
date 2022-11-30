@@ -17,9 +17,9 @@ import {
   Signature,
   UInt64,
   UInt32,
-  verify,
   Struct,
   Circuit,
+  Bool,
 } from 'snarkyjs';
 
 // The public key of our trusted data provider
@@ -31,10 +31,12 @@ const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEt
 
 // This matches our output
 export class Reward extends Struct({
-  index: UInt32,
+  index: Field,
   publicKey: PublicKey,
-  delegatingBalance: UInt64,
-  rewards: UInt64
+  rewards: UInt64,
+  epoch: Field,
+  //signature: Signature, // Causes a stack overflow, may need to batch this at oracle
+  confirmed: Bool
 }) { // Have the data concatenated here?
 }
 
@@ -43,18 +45,19 @@ export class Rewards2 extends Struct(
 
 export class PoolPayout extends SmartContract {
 
-  // What state variables do we need to store
-
-  // The Oracle public key (takes 2)
-  @state(PublicKey) oraclePublicKey = State<PublicKey>();
-
   // The latest epoch - will init this variable to have a starting point
   @state(Field) currentEpoch = State<Field>();
 
   // The current index of the payout run
   @state(Field) currentIndex = State<Field>();
 
-  // Validator key
+  // Fee
+  @state(UInt32) feePercentage = State<UInt32>();
+
+  // The Oracle public key (takes 2)
+  @state(PublicKey) oraclePublicKey = State<PublicKey>();
+
+  // Validator key (takes 2)
   @state(PublicKey) validatorPublicKey = State<PublicKey>();
 
   // Deploy this - tighten permissions and move init stuff to an init method
@@ -65,7 +68,7 @@ export class PoolPayout extends SmartContract {
       editSequenceState: Permissions.proofOrSignature(),
       editState: Permissions.proofOrSignature(),
       incrementNonce: Permissions.proofOrSignature(),
-      receive: Permissions.proofOrSignature(),
+      receive: Permissions.none(),
       send: Permissions.proofOrSignature(),
       setDelegate: Permissions.impossible(),
       setPermissions: Permissions.proofOrSignature(),
@@ -75,51 +78,77 @@ export class PoolPayout extends SmartContract {
       setZkappUri: Permissions.impossible(),
     });
 
-    // Move this to an init() method
-    this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
+    // Move this to an init() method but this is useful to redeploy
     this.currentEpoch.set(Field(39));
     this.currentIndex.set(Field(0));
+    this.feePercentage.set(UInt32.from(5));
+    this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
-
-    // TODO emit an event for each payout?
   }
 
   @method sendReward(accounts: Rewards2) {
 
-    // Assert the validating key on chain
+    // This method loops through 9 payouts and sends tham.
+    // It needs to validate the index, the epoch and the signature
 
-    let oraclePublicKey = this.oraclePublicKey.get();
+    // get the current epoch
+    let currentEpoch = this.currentEpoch.get();
+    this.currentEpoch.assertEquals(currentEpoch);
+
+    // get the current index
+    let currentIndex = this.currentIndex.get();
+    this.currentIndex.assertEquals(currentIndex);
+    //Circuit.log(currentIndex);
+
+    // get the current fee
+    const feePercentage = this.feePercentage.get();
+    //Circuit.log(feePercentage);
+    this.feePercentage.assertEquals(feePercentage);
+
+    // Assert the validating key on chain
+    const oraclePublicKey = this.oraclePublicKey.get();
     this.oraclePublicKey.assertEquals(oraclePublicKey);
 
-    // Assert the epoch
-    let currentEpoch = this.currentEpoch.get();
-    this.currentEpoch.assertEquals(this.currentEpoch.get());
-
-    let currentIndex = this.currentIndex.get();
-    this.currentIndex.assertEquals(this.currentIndex.get());
+    // get the current validator
+    let validatorPublicKey = this.validatorPublicKey.get();
+    this.validatorPublicKey.assertEquals(validatorPublicKey);
 
     for (let [_, value] of Object.entries(accounts)) {
+
+      Circuit.log(currentIndex);
+
+      // First thing we do is validate the signature.
+      // This ensures that the data came from the oracle
+      // TODO validate signature
+
+      //const validSignature = signature.verify(oraclePublicKey, signedData);
+
+      // Check that the signature is valid
+      //validSignature.assertTrue();
+
+      // Assert the index is the same as the current index
+      value.index.assertEquals(currentIndex, "The index must match");
+
+      // Assert the epoch is correct
+      value.epoch.assertEquals(currentEpoch, "The epoch must match");
+
+      // calculate the rewards
+      let payout = value.rewards.mul(95).div(100).div(1000); // Temp make this smaller as easier to pay
+      payout.assertLte(value.rewards);
+
+      // If we made it this far we can send the 
       this.send({
         to: value.publicKey,
-        amount: 1_000_000,
+        //amount: value.rewards
+        amount: payout
       });
+
+      // Increment the index
+      currentIndex = currentIndex.add(1);
+      Circuit.log(currentIndex);
+
     }
-  }
 
-  @method claimReward() {
-    // TO IMPLEMENT
-    // Can only claim rewards when all payouts have been sent for an epoch
-    // This also updates the epoch to the next epoch, i.e. epoch is over...
-    // Can store a number for epoch rewards claimed
+    this.currentIndex.set(currentIndex);
   }
-
-  @method closeEpoch() {
-    // maybe ensure everything claimed
-    // checks that the index is complete and then updates state to the next epoch index 0
-  }
-
 }
-
-// We'll use a seperate fee payer so we can increment the nonces properly. This also simplifies the handling of fees.
-
-
