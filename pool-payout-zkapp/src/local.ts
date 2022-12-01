@@ -37,7 +37,7 @@ export class Reward extends Struct({
 }
 
 export class Rewards2 extends Struct(
-  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
+  [Reward, Reward, Reward, Reward, Reward]) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -135,7 +135,6 @@ export class PoolPayout extends SmartContract {
       // If we made it this far we can send the 
       this.send({
         to: value.publicKey,
-        //amount: value.rewards
         amount: payout
       });
 
@@ -157,10 +156,10 @@ export class PoolPayout extends SmartContract {
 
   const Local = Mina.LocalBlockchain();
   Mina.setActiveInstance(Local);
-  const deployerAccount = Local.testAccounts[0].privateKey;
+  const deployerAccount = Local.testAccounts[8].privateKey;
 
   // Use a prefunded account as we will send rewards from here
-  const zkAppPrivateKey = Local.testAccounts[1].privateKey;
+  const zkAppPrivateKey = Local.testAccounts[9].privateKey;
   const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
   const zkAppInstance = new PoolPayout(zkAppAddress);
@@ -183,7 +182,7 @@ export class PoolPayout extends SmartContract {
 
   // Add some test payouts
   let rewardFields: Rewards2 = [];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 5; i++) {
     rewardFields.push({
       index: Field(i),
       publicKey: Local.testAccounts[i].privateKey.toPublicKey(),
@@ -193,6 +192,8 @@ export class PoolPayout extends SmartContract {
       confirmed: Bool(true),
     });
   }
+
+  console.log(rewardFields);
 
   try {
     let transaction = await Mina.transaction(
