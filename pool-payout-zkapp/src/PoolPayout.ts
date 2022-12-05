@@ -33,12 +33,14 @@ const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEt
 export class Reward extends Struct({
   index: Field,
   publicKey: PublicKey,
-  rewards: UInt64,
-  epoch: Field,
-  //signature: Signature, // Causes a stack overflow, may need to batch this at oracle
-  confirmed: Bool
+  rewards: UInt64
 }) { // Have the data concatenated here?
 }
+
+export class FeePayout extends Struct({
+  numDelegates: Field,
+  payout: UInt64
+}) { };
 
 export class Rewards2 extends Struct(
   [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
@@ -86,7 +88,7 @@ export class PoolPayout extends SmartContract {
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
   }
 
-  @method sendReward(accounts: Rewards2) {
+  @method sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
 
     // This method loops through 9 payouts and sends tham.
     // It needs to validate the index, the epoch and the signature
@@ -94,6 +96,7 @@ export class PoolPayout extends SmartContract {
     // get the current epoch
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(currentEpoch);
+    this.currentEpoch.assertEquals(epoch);
 
     // get the current index
     let currentIndex = this.currentIndex.get();
@@ -113,42 +116,53 @@ export class PoolPayout extends SmartContract {
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorPublicKey);
 
+    // Assert the epoch is correct
+    epoch.assertEquals(currentEpoch, "The epoch must match");
+
+    var signedData: Field[] = [];
+
     for (let [_, value] of Object.entries(accounts)) {
 
-      Circuit.log(currentIndex);
+      // reconstruct the signed data
+      signedData = signedData.concat(value.index.toFields()).concat(value.publicKey.toFields()).concat(value.rewards.toFields());
 
-      // First thing we do is validate the signature.
-      // This ensures that the data came from the oracle
-      // TODO validate signature
-
-      //const validSignature = signature.verify(oraclePublicKey, signedData);
-
-      // Check that the signature is valid
-      //validSignature.assertTrue();
 
       // Assert the index is the same as the current index
       value.index.assertEquals(currentIndex, "The index must match");
 
-      // Assert the epoch is correct
-      value.epoch.assertEquals(currentEpoch, "The epoch must match");
-
       // calculate the rewards
-      let payout = value.rewards.mul(95).div(100).div(1000); // Temp make this smaller as easier to pay
+      let payoutPercentage = UInt64.from(100).sub(UInt64.from(5));
+      let payout = value.rewards.mul(payoutPercentage).div(100).div(1000); // Temp make this smaller as easier to pay
       payout.assertLte(value.rewards);
 
       // If we made it this far we can send the 
       this.send({
         to: value.publicKey,
-        //amount: value.rewards
         amount: payout
       });
 
       // Increment the index
       currentIndex = currentIndex.add(1);
-      Circuit.log(currentIndex);
+
+      // Add precondition for when this can be sent on global slot number
+      // There isn't a greater than so specifiy an upper bound that is 2^32 - 1 
+      let minimumSlotNumber = epoch.add(1).mul(7140).add(1000);
+      this.network.globalSlotSinceGenesis.assertBetween(UInt32.from(minimumSlotNumber), UInt32.from(4294967295));
 
     }
 
+    signedData = signedData.concat(epoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+
+    const validSignature = signature.verify(oraclePublicKey, signedData);
+
+    // Check that the signature is valid
+    validSignature.assertTrue();
+
     this.currentIndex.set(currentIndex);
+  }
+
+  // why not move this into the above with a Circuit.if
+  @method closeEpoch(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
+  
   }
 }

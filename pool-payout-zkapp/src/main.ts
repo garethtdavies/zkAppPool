@@ -1,6 +1,6 @@
 //https://berkeley.minaexplorer.com/transaction/CkpaG8iqhthWpvMhUCcJG6n51ojPJaQLbwKGMQMJfFMabaF3b9XKE
 
-import { PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
+import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
 import {
   isReady,
@@ -52,7 +52,7 @@ import {
 
   // Function URL
   // TODO pass the epoch via the command line - hardcoded here for testing
-  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39"
+  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39&index=18"
 
   console.log(functionUrl);
 
@@ -72,36 +72,38 @@ import {
     console.log(error)
   });
 
-  // Take a small slice to test batch sending payouts
-  let testData = data.rewards.slice(index, index+9);
-
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
-  console.log(testData);
+  console.log(data.rewards);
 
   let rewardFields: Rewards2 = [];
 
   // Now we have to convert this to Fields
-  testData.forEach((element) => {
+  data.rewards.forEach((element) => {
     rewardFields.push({
       index: Field(element.index),
       publicKey: PublicKey.fromBase58(element.publicKey),
-      rewards: UInt64.from(element.rewards),
-      epoch: Field(element.epoch),
-      //signature: Signature.fromJSON(element.signature),
-      confirmed: Bool(element.confirmed)
+      rewards: UInt64.from(element.rewards)
     });
   });
 
   // console.log(rewardFields.length);
   // TODO check if length is less than 9 if so pad the length until it is
+  let feePayout = new FeePayout({
+    numDelegates: Field(data.feePayout.numDelegates),
+    payout: UInt64.from(data.feePayout.payout),
+  })
+
+  let epoch = Field(data.epoch);
+  let signature = Signature.fromJSON(data.signature);
+
 
   try {
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
       () => {
         //AccountUpdate.fundNewAccount(feePayerPrivateKey);
-        zkAppInstance.sendReward(rewardFields);
+        zkAppInstance.sendReward(rewardFields, feePayout, epoch, signature);
       }
     );
 
