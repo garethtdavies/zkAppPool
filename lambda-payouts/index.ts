@@ -96,7 +96,7 @@ exports.handler = async (event) => {
 
   //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
   //const epochEvent = "39";
-  //const indexEvent = 0;
+  //let indexEvent = 55;
   //const limit = 9;
 
   // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV

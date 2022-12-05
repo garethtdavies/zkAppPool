@@ -70,7 +70,7 @@ exports.handler = async (event) => {
     const limit = 9;
     //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
     //const epochEvent = "39";
-    //const indexEvent = 0;
+    //let indexEvent = 55;
     //const limit = 9;
     // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
     const privateKey = snarkyjs_1.PrivateKey.fromBase58("EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53");
