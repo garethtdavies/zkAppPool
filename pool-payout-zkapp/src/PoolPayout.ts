@@ -1,10 +1,10 @@
 /*
-* First we get the data from the oracle and verify it by checking the signature
-* Then we get the latest index from the chain
-* Then we batch up 9 accounts
-* We do all the assertions, right epoch, right index etc...
+TODO use the onchain data for the fee payout
+Use the on chain data for calculating the rewards
+Handle the case where we have less than 9 in the array
+Tidy up keys in scripts
+Pass the index by variable to the script
 */
-
 import {
   Field,
   SmartContract,
@@ -88,10 +88,9 @@ export class PoolPayout extends SmartContract {
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
   }
 
+  // This method sends the rewards to the validator
+  // It verifies the index and epoch from the oracle
   @method sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
-
-    // This method loops through 9 payouts and sends tham.
-    // It needs to validate the index, the epoch and the signature
 
     // get the current epoch
     let currentEpoch = this.currentEpoch.get();
@@ -155,14 +154,25 @@ export class PoolPayout extends SmartContract {
 
     const validSignature = signature.verify(oraclePublicKey, signedData);
 
-    // Check that the signature is valid
+    // Check that the signature is valid if it isn't the transaction will fail
     validSignature.assertTrue();
 
     this.currentIndex.set(currentIndex);
+
+    const closeEpoch = Circuit.if(currentIndex.equals(feePayout.numDelegates), (() => {
+      // TRUE
+      this.currentIndex.set(Field(0));
+      this.currentEpoch.set(epoch.add(1));
+      this.send({
+        to: validatorPublicKey,
+        amount: feePayout.payout.mul(5).div(100).div(1000), // Temp make this smaller as easier to pay
+      });
+      return Field(1);
+    })(), Field(0))
   }
 
   // why not move this into the above with a Circuit.if
   @method closeEpoch(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
-  
+
   }
 }
