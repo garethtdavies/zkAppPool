@@ -66,7 +66,7 @@ exports.handler = async (event) => {
     // get the event from Lambda URI and allow for local development
     const eventKey = event.queryStringParameters.publicKey;
     const epochEvent = event.queryStringParameters.epoch;
-    const indexEvent = event.queryStringParameters.index || 0;
+    let indexEvent = event.queryStringParameters.index || 0;
     const limit = 9;
     //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
     //const epochEvent = "39";
@@ -110,9 +110,8 @@ exports.handler = async (event) => {
     console.log("Total payout is: " + totalPoolToShare / 1000000000);
     let outputArray = [];
     var signedData = [];
-    let index = 0;
     // Trim the staking data to match our index and limit
-    let trimmedStakingData = stakingData.slice(indexEvent, limit);
+    let trimmedStakingData = stakingData.slice(indexEvent, limit + indexEvent);
     // Anyone who is in this list will be getting a reward, asssuming above 0
     trimmedStakingData.forEach((staker) => {
         let delegatingKey = staker.public_key;
@@ -123,7 +122,7 @@ exports.handler = async (event) => {
         // For all stakers feePayout is false
         let feePayout = (0, snarkyjs_1.Bool)(false);
         // Format 
-        const indexToField = snarkyjs_1.UInt32.from(index);
+        const indexToField = snarkyjs_1.UInt32.from(indexEvent);
         const publicKeyToField = snarkyjs_1.PublicKey.fromBase58(delegatingKey);
         const rewardsToField = snarkyjs_1.UInt64.from(rewards);
         // Concat the fields to sign all this data
@@ -134,7 +133,7 @@ exports.handler = async (event) => {
             "publicKey": publicKeyToField,
             "rewards": rewardsToField,
         });
-        index++;
+        indexEvent++;
     });
     // Add data for the fee payout
     const epochToField = snarkyjs_1.UInt32.from(epochEvent);

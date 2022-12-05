@@ -91,7 +91,7 @@ exports.handler = async (event) => {
   // get the event from Lambda URI and allow for local development
   const eventKey = event.queryStringParameters.publicKey;
   const epochEvent = event.queryStringParameters.epoch;
-  const indexEvent = event.queryStringParameters.index || 0;
+  let indexEvent = event.queryStringParameters.index || 0;
   const limit = 9;
 
   //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
@@ -155,10 +155,8 @@ exports.handler = async (event) => {
 
   var signedData: Field[] = [];
 
-  let index = 0;
-
   // Trim the staking data to match our index and limit
-  let trimmedStakingData = stakingData.slice(indexEvent, limit);
+  let trimmedStakingData = stakingData.slice(indexEvent, limit + indexEvent);
 
   // Anyone who is in this list will be getting a reward, asssuming above 0
   trimmedStakingData.forEach((staker) => {
@@ -174,7 +172,7 @@ exports.handler = async (event) => {
     let feePayout = Bool(false);
 
     // Format 
-    const indexToField = UInt32.from(index);
+    const indexToField = UInt32.from(indexEvent);
     const publicKeyToField = PublicKey.fromBase58(delegatingKey);
     const rewardsToField = UInt64.from(rewards);
 
@@ -188,7 +186,7 @@ exports.handler = async (event) => {
       "rewards": rewardsToField,
     });
 
-    index++;
+    indexEvent++;
   });
 
   // Add data for the fee payout
