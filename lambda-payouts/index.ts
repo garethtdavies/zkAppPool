@@ -92,7 +92,6 @@ exports.handler = async (event) => {
   const eventKey = event.queryStringParameters.publicKey;
   const epochEvent = event.queryStringParameters.epoch;
   let indexEvent = event.queryStringParameters.index || 0;
-  const limit = 9;
 
   //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
   //const epochEvent = "39";
@@ -156,7 +155,7 @@ exports.handler = async (event) => {
   var signedData: Field[] = [];
 
   // Trim the staking data to match our index and limit
-  let trimmedStakingData = stakingData.slice(indexEvent, limit + indexEvent);
+  let trimmedStakingData = stakingData.slice(indexEvent, indexEvent + 9);
 
   // Anyone who is in this list will be getting a reward, asssuming above 0
   trimmedStakingData.forEach((staker) => {
