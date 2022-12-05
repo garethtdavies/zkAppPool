@@ -62,66 +62,41 @@ query($delegate: String!, $epoch: Int!){
 }
 `;
 
-// This query gets the last block of the epoch in question
-const query3 = gql`
-query ($epoch: Int) {
-  blocks(query: {protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: BLOCKHEIGHT_DESC, limit: 1) {
-    blockHeight
-  }
-}
-`;
-
-// We need the current block for confirmations
-const query4 = gql`
-{
-  blocks(query: {canonical: true}, sortBy: BLOCKHEIGHT_DESC, limit: 1) {
-    blockHeight
-  }
-}
-`;
-
 exports.handler = async (event) => {
 
   console.log("Let's go...");
 
   await isReady;
 
-  // The number of confirmations we need
-  const confirmations = 15;
-
   // Define the type that our function (and API) will return
   type Data = {
     rewards: Reward[];
+    epoch: UInt32;
     feePayout: FeePayout;
     publicKey: PublicKey;
+    signature: Signature;
   };
 
   type Reward = {
     "index": UInt32;
     "publicKey": PublicKey;
-    "delegatingBalance": UInt64;
     "rewards": UInt64;
-    "epoch": UInt32;
-    "confirmed": Bool;
-    "signature": Signature;
   };
 
   type FeePayout = {
-    "index": UInt32;
-    "epoch": UInt32;
-    "numDelegates": UInt32; // Need to know when we can make a payout - can make this an onchain state var
+    "numDelegates": UInt32;
     "payout": UInt64;
-    "payoutAddress": PublicKey;
-    "signature": Signature;
   }
 
-  // get the event from Lambda URI
-  const eventKey = event.queryStringParameters.publicKey;
-  const epochEvent = event.queryStringParameters.epoch;
+  // get the event from Lambda URI and allow for local development
+  const eventKey: string = event.queryStringParameters.publicKey;
+  const epochEvent: number = event.queryStringParameters.epoch;
+  let indexEvent: number = event.queryStringParameters.index || 0;
 
-  // DEBUG
   //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
-  //const epochEvent = 39;
+  //const epochEvent = "39";
+  //let indexEvent = 55;
+  //const limit = 9;
 
   // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
   const privateKey = PrivateKey.fromBase58(
@@ -146,25 +121,6 @@ exports.handler = async (event) => {
   const numDelegators = stakingData.length;
 
   console.log("There are " + numDelegators + " delegators in the pool");
-
-  // Get the last block of the epoch in question
-  // This enforces we can't run multiple times an epoch as need to wait for it to complete - you could do this differently but this works for now
-  const lastBlockOfEpoch = await request('https://graphql.minaexplorer.com', query3, { epoch: epochEvent }).then((data) => {
-    return data.blocks[0].blockHeight;
-  });
-
-  console.log("Last block of epoch is: " + lastBlockOfEpoch);
-
-  // Get current height
-  const currentHeight = await request('https://graphql.minaexplorer.com', query4).then((data) => {
-    return data.blocks[0].blockHeight;
-  });
-
-  console.log("Current height is: " + currentHeight);
-
-  // Check if we have enough confs past end of epoch - we return a boolean so the signed data doesn't change
-  const minConfirmations = (currentHeight >= lastBlockOfEpoch + confirmations) ? true : false;
-  console.log("Do we have enough confirmations: " + minConfirmations);
 
   /*Calculate rewards*/
   const poolBalance = stakingData.reduce((sum, current) => sum + current.balance, 0);
@@ -196,12 +152,13 @@ exports.handler = async (event) => {
 
   let outputArray: Reward[] = [];
 
-  let index = 0;
-
   var signedData: Field[] = [];
 
+  // Trim the staking data to match our index and limit
+  let trimmedStakingData = stakingData.slice(indexEvent, Number(indexEvent) + 9);
+
   // Anyone who is in this list will be getting a reward, asssuming above 0
-  stakingData.forEach((staker) => {
+  trimmedStakingData.forEach((staker) => {
 
     let delegatingKey = staker.public_key;
     // Convert to nanomina and force to an int
@@ -214,56 +171,44 @@ exports.handler = async (event) => {
     let feePayout = Bool(false);
 
     // Format 
-    const indexToField = UInt32.from(index);
+    const indexToField = UInt32.from(indexEvent);
     const publicKeyToField = PublicKey.fromBase58(delegatingKey);
-    const delegatingBalanceToField = UInt64.from(Math.trunc(delegatingBalance * 1000000000));
     const rewardsToField = UInt64.from(rewards);
-    const epochToField = UInt32.from(epochEvent);
-    const confirmedToField = Bool(minConfirmations);
 
     // Concat the fields to sign all this data
-    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(delegatingBalanceToField.toFields()).concat(rewardsToField.toFields()).concat(epochToField.toFields()).concat(confirmedToField.toFields());
-
-    // Sign it with the oracle public key
-    const signature = Signature.create(privateKey, signedData);
+    signedData = signedData.concat(indexToField.toFields()).concat(publicKeyToField.toFields()).concat(rewardsToField.toFields());
 
     // Add this to our response
     outputArray.push({
       "index": indexToField,
       "publicKey": publicKeyToField,
-      "delegatingBalance": delegatingBalanceToField,
       "rewards": rewardsToField,
-      "epoch": epochToField,
-      "signature": signature,
-      "confirmed": confirmedToField,
     });
 
-    index++;
+    indexEvent++;
   });
 
   // Add data for the fee payout
-  const indexToField = UInt32.from(index);
   const epochToField = UInt32.from(epochEvent);
   const numDelegatesToField = UInt32.from(numDelegators);
   const payoutToField = UInt64.from(totalPoolToShare);
-  const publicKeyToField = PublicKey.fromBase58("B62qoeik6jNZapnxHeYaF4sJMEq6LccCJ6cscm2ZoHNmX5UcQREF7H3");
 
-  signedData = indexToField.toFields().concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields()).concat(publicKeyToField.toFields());
+
+  // We have signed all the reward data already
+  signedData = signedData.concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields());
   const signature = Signature.create(privateKey, signedData);
 
   const feePayout: FeePayout = {
-    "index": indexToField,
-    "epoch": epochToField,
-    "numDelegates": numDelegatesToField, // Need to know when we can make a payout - can make this an onchain state var
-    "payout": payoutToField,
-    "payoutAddress": publicKeyToField,
-    "signature": signature,
+    "numDelegates": numDelegatesToField,
+    "payout": payoutToField
   }
 
   const data: Data = {
     rewards: outputArray,
+    epoch: epochToField,
     feePayout: feePayout,
     publicKey: signingKey,
+    signature: signature
   };
 
   const response = {
