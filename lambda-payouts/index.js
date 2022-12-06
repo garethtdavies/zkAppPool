@@ -110,7 +110,7 @@ exports.handler = async (event) => {
     let outputArray = [];
     var signedData = [];
     // Trim the staking data to match our index and limit
-    let trimmedStakingData = stakingData.slice(indexEvent, Number(indexEvent) + 9);
+    let trimmedStakingData = stakingData.slice(indexEvent, Number(indexEvent) + 8);
     // Anyone who is in this list will be getting a reward, asssuming above 0
     trimmedStakingData.forEach((staker) => {
         let delegatingKey = staker.public_key;
