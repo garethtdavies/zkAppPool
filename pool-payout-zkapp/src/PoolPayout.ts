@@ -146,8 +146,9 @@ export class PoolPayout extends SmartContract {
 
       // Add precondition for when this can be sent on global slot number
       // There isn't a greater than so specifiy an upper bound that is 2^32 - 1 
-      let minimumSlotNumber = epoch.add(1).mul(7140).add(1000);
-      this.network.globalSlotSinceGenesis.assertBetween(UInt32.from(minimumSlotNumber), UInt32.from(4294967295));
+      // Have to comment out to test on Berkeley
+      //let minimumSlotNumber = epoch.add(1).mul(7140).add(1000);
+      //this.network.globalSlotSinceGenesis.assertBetween(UInt32.from(minimumSlotNumber), UInt32.from(4294967295));
 
     }
 
@@ -159,23 +160,9 @@ export class PoolPayout extends SmartContract {
     validSignature.assertTrue();
 
     // Debugging control flow
+    // If we are at the number of delegators we can send the fees to the onchain validated public key
     const checkBigger = Circuit.if(
       currentIndex.gte(feePayout.numDelegates),
-      (() => {
-        // TRUE
-        return currentIndex;
-      })(),
-      (() => {
-        // FALSE
-        return feePayout.numDelegates;
-      })(),
-    );
-
-    Circuit.log(checkBigger);
-
-    // If the index is gte the number of delegates we advance the epoch
-    /*
-    Circuit.if(currentIndex.equals(feePayout.numDelegates),
       (() => {
         // TRUE
         this.currentIndex.set(Field(0));
@@ -184,13 +171,15 @@ export class PoolPayout extends SmartContract {
           to: validatorPublicKey,
           amount: feePayout.payout.mul(5).div(100).div(1000), // Temp make this smaller as easier to pay
         });
-        return Field(1);
+        return currentIndex;
       })(),
       (() => {
-        // FALSE
-        return Field(0);
-      })()
+        // FALSE - so we just update the onchain state to the new index
+        this.currentIndex.set(currentIndex);
+        return feePayout.numDelegates;
+      })(),
     );
-    */
+
+    Circuit.log(checkBigger);
   }
 }
