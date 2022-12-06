@@ -1,6 +1,6 @@
 //https://berkeley.minaexplorer.com/transaction/CkpaG8iqhthWpvMhUCcJG6n51ojPJaQLbwKGMQMJfFMabaF3b9XKE
 
-import { PoolPayout, Reward} from './PoolPayout.js';
+import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
 import {
   isReady,
@@ -47,13 +47,20 @@ import {
   // Prime the cache as otherwise this falls over
   await fetchAccount({publicKey: zkAppAddress});
 
+  // Need to keep manual track of the nonces and current index so we can process many tx in a block
+  // Need to track these manually offline
+  let feePayerNonce = 466;
+  let zkAppAddressNonce = 2;
+  let index = 0;
+
+  // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
+  // Why? Because we want to sign these all offline and get more than 1 tx in a block
+
   // Function URL
-  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39"
+  // TODO pass the epoch via the command line - hardcoded here for testing
+  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39&index=" + index;
 
   console.log(functionUrl);
-
-  // Need to keep manual track of the nonces and current index so we can process many tx in a block
-  let index = 1;
 
   // Make the API call
   const data = await fetch(functionUrl).then((response) => {
@@ -65,28 +72,43 @@ import {
     console.log(error)
   });
 
-  // Take 1 for a proof of concept
-  let testData = data.rewards.slice(index, index+1);
-  console.log(testData);
-
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
+  let rewardFields: Rewards2 = [];
+
   // Now we have to convert this to Fields
-  let passedData : Reward =  {
-      index: Field(testData[0].index),
-      publicKey: PublicKey.fromBase58(testData[0].publicKey),
-      delegatingBalance: UInt64.from(testData[0].delegatingBalance),
-      rewards: UInt64.from(testData[0].rewards),
-      epoch: Field(testData[0].epoch),
-      signature: Signature.fromJSON(testData[0].signature),
-      confirmed: Bool(testData[0].confirmed)
-    }
+  data.rewards.forEach((element) => {
+    rewardFields.push({
+      index: Field(element.index),
+      publicKey: PublicKey.fromBase58(element.publicKey),
+      rewards: UInt64.from(element.rewards)
+    });
+  });
+
+  // Ensure we always have a fixed length array or pass some dummy data
+  for (let i = rewardFields.length; i < 8; i++) {
+    rewardFields.push({
+      index: Field(i),
+      publicKey: zkAppAddress,
+      rewards: UInt64.from(0)
+    });
+  }
+  
+  let feePayout = new FeePayout({
+    numDelegates: Field(data.feePayout.numDelegates),
+    payout: UInt64.from(data.feePayout.payout),
+  })
+
+  let epoch = Field(data.epoch);
+  let signature = Signature.fromJSON(data.signature);
+
 
   try {
     let transaction = await Mina.transaction(
       { feePayerKey: feePayerPrivateKey, fee: transactionFee },
       () => {
-        zkAppInstance.sendReward(passedData);
+        //AccountUpdate.fundNewAccount(feePayerPrivateKey);
+        zkAppInstance.sendReward(rewardFields, feePayout, epoch, signature);
       }
     );
 
@@ -95,7 +117,7 @@ import {
 
     console.log("Sending transaction");
     console.log(transaction.toPretty());
-    await transaction.send();
+    //await transaction.send();
   } catch (error: any) {
     console.log("There was an issue");
     console.log(error.message);
