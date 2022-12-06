@@ -47,20 +47,20 @@ import {
   // Prime the cache as otherwise this falls over
   await fetchAccount({publicKey: zkAppAddress});
 
+  // Need to keep manual track of the nonces and current index so we can process many tx in a block
+  // Need to track these manually offline
+  let feePayerNonce = 466;
+  let zkAppAddressNonce = 2;
+  let index = 0;
+
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
   // Why? Because we want to sign these all offline and get more than 1 tx in a block
 
   // Function URL
   // TODO pass the epoch via the command line - hardcoded here for testing
-  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39&index=0"
+  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39&index=" + index;
 
   console.log(functionUrl);
-
-  // Need to keep manual track of the nonces and current index so we can process many tx in a block
-  // Need to track these manually offline
-  let feePayerNonce = 466;
-  let zkAppAddressNonce = 2;
-  let index = 9;
 
   // Make the API call
   const data = await fetch(functionUrl).then((response) => {
@@ -74,8 +74,6 @@ import {
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
-  console.log(data.rewards);
-
   let rewardFields: Rewards2 = [];
 
   // Now we have to convert this to Fields
@@ -87,8 +85,15 @@ import {
     });
   });
 
-  // console.log(rewardFields.length);
-  // TODO check if length is less than 9 if so pad the length until it is
+  // Ensure we always have a fixed length array or pass some dummy data
+  for (let i = rewardFields.length; i < 8; i++) {
+    rewardFields.push({
+      index: Field(i),
+      publicKey: zkAppAddress,
+      rewards: UInt64.from(0)
+    });
+  }
+  
   let feePayout = new FeePayout({
     numDelegates: Field(data.feePayout.numDelegates),
     payout: UInt64.from(data.feePayout.payout),
@@ -112,7 +117,7 @@ import {
 
     console.log("Sending transaction");
     console.log(transaction.toPretty());
-    await transaction.send();
+    //await transaction.send();
   } catch (error: any) {
     console.log("There was an issue");
     console.log(error.message);

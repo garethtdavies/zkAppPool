@@ -5,6 +5,7 @@ Handle the case where we have less than 9 in the array
 Tidy up keys in scripts
 Pass the index by variable to the script
 */
+import { check } from 'prettier';
 import {
   Field,
   SmartContract,
@@ -43,7 +44,7 @@ export class FeePayout extends Struct({
 }) { };
 
 export class Rewards2 extends Struct(
-  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
+  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -157,22 +158,39 @@ export class PoolPayout extends SmartContract {
     // Check that the signature is valid if it isn't the transaction will fail
     validSignature.assertTrue();
 
-    this.currentIndex.set(currentIndex);
+    // Debugging control flow
+    const checkBigger = Circuit.if(
+      currentIndex.gte(feePayout.numDelegates),
+      (() => {
+        // TRUE
+        return currentIndex;
+      })(),
+      (() => {
+        // FALSE
+        return feePayout.numDelegates;
+      })(),
+    );
 
-    const closeEpoch = Circuit.if(currentIndex.equals(feePayout.numDelegates), (() => {
-      // TRUE
-      this.currentIndex.set(Field(0));
-      this.currentEpoch.set(epoch.add(1));
-      this.send({
-        to: validatorPublicKey,
-        amount: feePayout.payout.mul(5).div(100).div(1000), // Temp make this smaller as easier to pay
-      });
-      return Field(1);
-    })(), Field(0))
-  }
+    Circuit.log(checkBigger);
 
-  // why not move this into the above with a Circuit.if
-  @method closeEpoch(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
-
+    // If the index is gte the number of delegates we advance the epoch
+    /*
+    Circuit.if(currentIndex.equals(feePayout.numDelegates),
+      (() => {
+        // TRUE
+        this.currentIndex.set(Field(0));
+        this.currentEpoch.set(epoch.add(1));
+        this.send({
+          to: validatorPublicKey,
+          amount: feePayout.payout.mul(5).div(100).div(1000), // Temp make this smaller as easier to pay
+        });
+        return Field(1);
+      })(),
+      (() => {
+        // FALSE
+        return Field(0);
+      })()
+    );
+    */
   }
 }
