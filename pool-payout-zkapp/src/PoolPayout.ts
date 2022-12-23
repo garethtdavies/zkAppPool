@@ -55,7 +55,7 @@ export class FeePayout extends Struct({
 }) { }
 
 export class Rewards2 extends Struct({
-  rewards: Circuit.array(Reward, 8),
+  rewards: Circuit.array(Reward, 2),
 }) { }
 
 export class PoolPayout extends SmartContract {
@@ -128,10 +128,13 @@ export class PoolPayout extends SmartContract {
     this.validatorPublicKey.assertEquals(validatorPublicKey);
 
     let signedData: Field[] = [];
-    let index = currentIndex;
 
-    for (let i = 0; i < 8; i++) {
+    let transactionIndex = currentIndex;
+
+    for (let i = 0; i < accounts.rewards.length; i++) {
       const reward = accounts.rewards[i];
+      const accountIsNotEmpty = Bool.not(reward.publicKey.isEmpty());
+
       // Assert the index is the same as the current index
       // value.index.assertEquals(index, "The index must match");
 
@@ -140,8 +143,24 @@ export class PoolPayout extends SmartContract {
 
       // calculate the rewards
       let payoutPercentage = UInt64.from(100).sub(UInt64.from(5));
-      let payout = reward.rewards.mul(payoutPercentage).div(100).div(1000); // Temp make this smaller as easier to pay
+      let payout = Circuit.if(
+        accountIsNotEmpty,
+        (() => reward.rewards.mul(payoutPercentage).div(100))(), // Temp make this smaller as easier to pay
+        (() => UInt64.zero)()
+      )
       payout.assertLte(reward.rewards);
+
+      Circuit.asProver(() => {
+        Circuit.log(
+          "Payout: ", reward.publicKey, payout.toString()
+        )
+        Circuit.log(
+          "Percent: ", payoutPercentage.toString()
+        )
+        Circuit.log(
+          "Calc: ", reward.rewards.toString(), 'mul', (payoutPercentage).div(100).toString()
+        )
+      })
 
       // If we made it this far we can send the 
       this.send({
@@ -150,7 +169,7 @@ export class PoolPayout extends SmartContract {
       });
 
       // Increment the index
-      index = index.add(1);
+      transactionIndex = transactionIndex.add(1);
 
       // Add precondition for when this can be sent on global slot number
       // There isn't a greater than so specifiy an upper bound that is 2^32 - 1 
@@ -169,25 +188,23 @@ export class PoolPayout extends SmartContract {
 
     // Debugging control flow
     // If we are at the number of delegators we can send the fees to the onchain validated public key
-    const checkBigger = Circuit.if(
-      currentIndex.gte(feePayout.numDelegates),
-      (() => {
-        // TRUE
-        this.currentIndex.set(Field(0));
-        this.currentEpoch.set(epoch.add(1));
-        this.send({
-          to: validatorPublicKey,
-          amount: feePayout.payout.mul(5).div(100).div(1000), // Temp make this smaller as easier to pay
-        });
-        return currentIndex;
-      })(),
-      (() => {
-        // FALSE - so we just update the onchain state to the new index
-        this.currentIndex.set(currentIndex);
-        return feePayout.numDelegates;
-      })(),
-    );
+    const [validatorCut, i, e] = Circuit.if(
+      transactionIndex.gte(feePayout.numDelegates),
+      (() => [feePayout.payout.mul(5).div(100), Field(0), epoch.add(1)])(),
+      (() => [UInt64.from(0), currentIndex, epoch])()
+    )
 
-    Circuit.log(checkBigger);
+    Circuit.asProver(() => {
+      Circuit.log(
+        "Validator Cut: ", validatorCut.toString()
+      )
+    })
+
+    this.currentEpoch.set(e);
+    this.currentIndex.set(i);
+    this.send({
+      to: validatorPublicKey,
+      amount: validatorCut
+    });
   }
 }
