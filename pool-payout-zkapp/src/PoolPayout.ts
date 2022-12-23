@@ -5,7 +5,7 @@ Handle the case where we have less than 9 in the array
 Tidy up keys in scripts
 Pass the index by variable to the script
 */
-import { check } from 'prettier';
+
 import {
   Field,
   SmartContract,
@@ -21,11 +21,11 @@ import {
   Struct,
   Circuit,
   Bool,
+  PrivateKey,
 } from 'snarkyjs';
 
 // The public key of our trusted data provider
-const ORACLE_PUBLIC_KEY =
-  'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
+const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
 
 // Using this value as a test as a nice number of delegates
 const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
@@ -36,15 +36,26 @@ export class Reward extends Struct({
   publicKey: PublicKey,
   rewards: UInt64
 }) { // Have the data concatenated here?
+  static blank(): Reward {
+    return new Reward({
+      index: Field(0),
+      publicKey: PublicKey.empty(),
+      rewards: UInt64.from(0)
+    });
+  }
+  isBlank(): Bool {
+    return this.publicKey.equals(PublicKey.empty());
+  }
 }
 
 export class FeePayout extends Struct({
   numDelegates: Field,
   payout: UInt64
-}) { };
+}) { }
 
-export class Rewards2 extends Struct(
-  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
+export class Rewards2 extends Struct({
+  rewards: Circuit.array(Reward, 2),
+}) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -81,12 +92,31 @@ export class PoolPayout extends SmartContract {
       setZkappUri: Permissions.impossible(),
     });
 
-    // Move this to an init() method but this is useful to redeploy
     this.currentEpoch.set(Field(39));
     this.currentIndex.set(Field(0));
     this.feePercentage.set(UInt32.from(5));
     this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
+  }
+
+  @method
+  updateEpoch(n: Field) {
+    this.currentEpoch.set(n);
+  }
+
+  @method
+  updateIndex(i: Field) {
+    this.currentIndex.set(i);
+  }
+
+  @method
+  updateOracle(publicKey: PublicKey) {
+    this.oraclePublicKey.set(publicKey);
+  }
+
+  @method
+  updateValidator(publicKey: PublicKey) {
+    this.validatorPublicKey.set(publicKey);
   }
 
   // This method sends the rewards to the validator
@@ -96,7 +126,7 @@ export class PoolPayout extends SmartContract {
     // get the current epoch
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(currentEpoch);
-    this.currentEpoch.assertEquals(epoch);
+    epoch.assertEquals(currentEpoch, "The epoch must match");
 
     // get the current index
     let currentIndex = this.currentIndex.get();
@@ -116,33 +146,48 @@ export class PoolPayout extends SmartContract {
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorPublicKey);
 
-    // Assert the epoch is correct
-    epoch.assertEquals(currentEpoch, "The epoch must match");
+    let signedData: Field[] = [];
 
-    var signedData: Field[] = [];
+    // starting with the index on state, we can increment this variable during this transaction
+    let transactionIndex = currentIndex;
 
-    for (let [_, value] of Object.entries(accounts)) {
-
-      // reconstruct the signed data
-      signedData = signedData.concat(value.index.toFields()).concat(value.publicKey.toFields()).concat(value.rewards.toFields());
-
+    for (let i = 0; i < accounts.rewards.length; i++) {
+      const reward = accounts.rewards[i];
+      const accountIsNotEmpty = Bool.not(reward.publicKey.isEmpty());
 
       // Assert the index is the same as the current index
-      value.index.assertEquals(currentIndex, "The index must match");
+      const indexCheck = Bool.or(Bool.not(accountIsNotEmpty), reward.index.equals(transactionIndex));
+      indexCheck.assertEquals(Bool(true), "The index must match");
+
+      // reconstruct the signed data
+      signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields());
 
       // calculate the rewards
       let payoutPercentage = UInt64.from(100).sub(UInt64.from(5));
-      let payout = value.rewards.mul(payoutPercentage).div(100).div(1000); // Temp make this smaller as easier to pay
-      payout.assertLte(value.rewards);
+      let payout = Circuit.if(
+        accountIsNotEmpty,
+        (() => reward.rewards.mul(payoutPercentage).div(100))(), // Temp make this smaller as easier to pay
+        (() => UInt64.zero)()
+      )
+      payout.assertLte(reward.rewards);
+
+      Circuit.asProver(() => {
+        Circuit.log(
+          "Payout: ", reward.publicKey, payout.toString()
+        )
+        Circuit.log(
+          "Percent: ", payoutPercentage.toString()
+        )
+      })
 
       // If we made it this far we can send the 
       this.send({
-        to: value.publicKey,
+        to: reward.publicKey,
         amount: payout
       });
 
       // Increment the index
-      currentIndex = currentIndex.add(1);
+      transactionIndex = transactionIndex.add(1);
 
       // Add precondition for when this can be sent on global slot number
       // There isn't a greater than so specifiy an upper bound that is 2^32 - 1 
@@ -161,25 +206,23 @@ export class PoolPayout extends SmartContract {
 
     // Debugging control flow
     // If we are at the number of delegators we can send the fees to the onchain validated public key
-    const checkBigger = Circuit.if(
-      currentIndex.gte(feePayout.numDelegates),
-      (() => {
-        // TRUE
-        this.currentIndex.set(Field(0));
-        this.currentEpoch.set(epoch.add(1));
-        this.send({
-          to: validatorPublicKey,
-          amount: feePayout.payout.mul(5).div(100).div(1000), // Temp make this smaller as easier to pay
-        });
-        return currentIndex;
-      })(),
-      (() => {
-        // FALSE - so we just update the onchain state to the new index
-        this.currentIndex.set(currentIndex);
-        return feePayout.numDelegates;
-      })(),
-    );
+    const [validatorCut, i, e] = Circuit.if(
+      transactionIndex.gte(feePayout.numDelegates),
+      (() => [feePayout.payout.mul(5).div(100), Field(0), epoch.add(1)])(),
+      (() => [UInt64.from(0), currentIndex, epoch])()
+    )
 
-    Circuit.log(checkBigger);
+    Circuit.asProver(() => {
+      Circuit.log(
+        "Validator Cut: ", validatorCut.toString()
+      )
+    })
+
+    this.currentEpoch.set(e);
+    this.currentIndex.set(i);
+    this.send({
+      to: validatorPublicKey,
+      amount: validatorCut
+    });
   }
 }

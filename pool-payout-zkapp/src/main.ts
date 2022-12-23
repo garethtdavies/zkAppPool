@@ -40,12 +40,12 @@ import {
   console.log('Compiling smart contract...');
   try {
     await PoolPayout.compile();
-  } catch(error) {
+  } catch (error) {
     console.log(error);
   }
 
   // Prime the cache as otherwise this falls over
-  await fetchAccount({publicKey: zkAppAddress});
+  await fetchAccount({ publicKey: zkAppAddress });
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
   // Need to track these manually offline
@@ -74,26 +74,22 @@ import {
 
   // This always need to be a fixed size so we would have to create dummy rewards to fill it
 
-  let rewardFields: Rewards2 = [];
+  let rewardFields: Rewards2 = {
+    rewards: [
+      Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(),
+      Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank()
+    ]
+  };
 
   // Now we have to convert this to Fields
-  data.rewards.forEach((element) => {
-    rewardFields.push({
+  data.rewards.forEach((element, i) => {
+    rewardFields.rewards[i] = new Reward({
       index: Field(element.index),
       publicKey: PublicKey.fromBase58(element.publicKey),
       rewards: UInt64.from(element.rewards)
     });
   });
 
-  // Ensure we always have a fixed length array or pass some dummy data
-  for (let i = rewardFields.length; i < 8; i++) {
-    rewardFields.push({
-      index: Field(i),
-      publicKey: zkAppAddress,
-      rewards: UInt64.from(0)
-    });
-  }
-  
   let feePayout = new FeePayout({
     numDelegates: Field(data.feePayout.numDelegates),
     payout: UInt64.from(data.feePayout.payout),
