@@ -6,6 +6,7 @@ Tidy up keys in scripts
 Pass the index by variable to the script
 */
 import { check } from 'prettier';
+import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PRIVATE_KEY_TESTING } from './constants';
 import {
   Field,
   SmartContract,
@@ -21,11 +22,11 @@ import {
   Struct,
   Circuit,
   Bool,
+  PrivateKey,
 } from 'snarkyjs';
 
 // The public key of our trusted data provider
-const ORACLE_PUBLIC_KEY =
-  'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
+const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
 
 // Using this value as a test as a nice number of delegates
 const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
@@ -36,15 +37,26 @@ export class Reward extends Struct({
   publicKey: PublicKey,
   rewards: UInt64
 }) { // Have the data concatenated here?
+  static blank(): Reward {
+    return new Reward({
+      index: Field(0),
+      publicKey: PublicKey.empty(),
+      rewards: UInt64.from(0)
+    });
+  }
+  isBlank(): Bool {
+    return this.publicKey.equals(PublicKey.empty());
+  }
 }
 
 export class FeePayout extends Struct({
   numDelegates: Field,
   payout: UInt64
-}) { };
+}) { }
 
-export class Rewards2 extends Struct(
-  [Reward, Reward, Reward, Reward, Reward, Reward, Reward, Reward]) { }
+export class Rewards2 extends Struct({
+  rewards: Circuit.array(Reward, 8),
+}) { }
 
 export class PoolPayout extends SmartContract {
 
@@ -81,12 +93,11 @@ export class PoolPayout extends SmartContract {
       setZkappUri: Permissions.impossible(),
     });
 
-    // Move this to an init() method but this is useful to redeploy
     this.currentEpoch.set(Field(39));
     this.currentIndex.set(Field(0));
     this.feePercentage.set(UInt32.from(5));
-    this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
-    this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
+    this.oraclePublicKey.set(PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING).toPublicKey());
+    this.validatorPublicKey.set(PrivateKey.fromBase58(VALIDATOR_PRIVATE_KEY_TESTING).toPublicKey());
   }
 
   // This method sends the rewards to the validator
@@ -96,7 +107,7 @@ export class PoolPayout extends SmartContract {
     // get the current epoch
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(currentEpoch);
-    this.currentEpoch.assertEquals(epoch);
+    epoch.assertEquals(currentEpoch, "The epoch must match");
 
     // get the current index
     let currentIndex = this.currentIndex.get();
@@ -116,33 +127,30 @@ export class PoolPayout extends SmartContract {
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorPublicKey);
 
-    // Assert the epoch is correct
-    epoch.assertEquals(currentEpoch, "The epoch must match");
+    let signedData: Field[] = [];
+    let index = currentIndex;
 
-    var signedData: Field[] = [];
-
-    for (let [_, value] of Object.entries(accounts)) {
+    for (let i = 0; i < 8; i++) {
+      const reward = accounts.rewards[i];
+      // Assert the index is the same as the current index
+      // value.index.assertEquals(index, "The index must match");
 
       // reconstruct the signed data
-      signedData = signedData.concat(value.index.toFields()).concat(value.publicKey.toFields()).concat(value.rewards.toFields());
-
-
-      // Assert the index is the same as the current index
-      value.index.assertEquals(currentIndex, "The index must match");
+      signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields());
 
       // calculate the rewards
       let payoutPercentage = UInt64.from(100).sub(UInt64.from(5));
-      let payout = value.rewards.mul(payoutPercentage).div(100).div(1000); // Temp make this smaller as easier to pay
-      payout.assertLte(value.rewards);
+      let payout = reward.rewards.mul(payoutPercentage).div(100).div(1000); // Temp make this smaller as easier to pay
+      payout.assertLte(reward.rewards);
 
       // If we made it this far we can send the 
       this.send({
-        to: value.publicKey,
+        to: reward.publicKey,
         amount: payout
       });
 
       // Increment the index
-      currentIndex = currentIndex.add(1);
+      index = index.add(1);
 
       // Add precondition for when this can be sent on global slot number
       // There isn't a greater than so specifiy an upper bound that is 2^32 - 1 
