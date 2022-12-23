@@ -5,8 +5,7 @@ Handle the case where we have less than 9 in the array
 Tidy up keys in scripts
 Pass the index by variable to the script
 */
-import { check } from 'prettier';
-import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PRIVATE_KEY_TESTING } from './constants';
+
 import {
   Field,
   SmartContract,
@@ -96,8 +95,28 @@ export class PoolPayout extends SmartContract {
     this.currentEpoch.set(Field(39));
     this.currentIndex.set(Field(0));
     this.feePercentage.set(UInt32.from(5));
-    this.oraclePublicKey.set(PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING).toPublicKey());
-    this.validatorPublicKey.set(PrivateKey.fromBase58(VALIDATOR_PRIVATE_KEY_TESTING).toPublicKey());
+    this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
+    this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
+  }
+
+  @method
+  updateEpoch(n: Field) {
+    this.currentEpoch.set(n);
+  }
+
+  @method
+  updateIndex(i: Field) {
+    this.currentIndex.set(i);
+  }
+
+  @method
+  updateOracle(publicKey: PublicKey) {
+    this.oraclePublicKey.set(publicKey);
+  }
+
+  @method
+  updateValidator(publicKey: PublicKey) {
+    this.validatorPublicKey.set(publicKey);
   }
 
   // This method sends the rewards to the validator
@@ -129,6 +148,7 @@ export class PoolPayout extends SmartContract {
 
     let signedData: Field[] = [];
 
+    // starting with the index on state, we can increment this variable during this transaction
     let transactionIndex = currentIndex;
 
     for (let i = 0; i < accounts.rewards.length; i++) {
@@ -136,7 +156,8 @@ export class PoolPayout extends SmartContract {
       const accountIsNotEmpty = Bool.not(reward.publicKey.isEmpty());
 
       // Assert the index is the same as the current index
-      // value.index.assertEquals(index, "The index must match");
+      const indexCheck = Bool.or(Bool.not(accountIsNotEmpty), reward.index.equals(transactionIndex));
+      indexCheck.assertEquals(Bool(true), "The index must match");
 
       // reconstruct the signed data
       signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields());
@@ -156,9 +177,6 @@ export class PoolPayout extends SmartContract {
         )
         Circuit.log(
           "Percent: ", payoutPercentage.toString()
-        )
-        Circuit.log(
-          "Calc: ", reward.rewards.toString(), 'mul', (payoutPercentage).div(100).toString()
         )
       })
 
