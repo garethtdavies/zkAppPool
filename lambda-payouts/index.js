@@ -69,7 +69,7 @@ exports.handler = async (event) => {
     let indexEvent = event.queryStringParameters.index || 0;
     //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
     //const epochEvent = "39";
-    //let indexEvent = 55;
+    //let indexEvent = 58;
     //const limit = 9;
     // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
     const privateKey = snarkyjs_1.PrivateKey.fromBase58("EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53");
@@ -134,6 +134,15 @@ exports.handler = async (event) => {
         });
         indexEvent++;
     });
+    // Handle the case where we have less than 8
+    for (let i = trimmedStakingData.length; i < 8; i++) {
+        signedData = signedData.concat(snarkyjs_1.UInt32.from(0).toFields()).concat(snarkyjs_1.PublicKey.empty().toFields()).concat(snarkyjs_1.UInt64.from(0).toFields());
+        outputArray.push({
+            index: snarkyjs_1.UInt32.from(0),
+            publicKey: snarkyjs_1.PublicKey.empty(),
+            rewards: snarkyjs_1.UInt64.from(0)
+        });
+    }
     // Add data for the fee payout
     const epochToField = snarkyjs_1.UInt32.from(epochEvent);
     const numDelegatesToField = snarkyjs_1.UInt32.from(numDelegators);

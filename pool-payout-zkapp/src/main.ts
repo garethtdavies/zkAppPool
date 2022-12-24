@@ -51,7 +51,7 @@ import {
   // Need to track these manually offline
   let feePayerNonce = 0;
   let zkAppAddressNonce = 0;
-  let index = 16;
+  let index = 56;
   let epochOracle = 39;
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
