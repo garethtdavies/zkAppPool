@@ -22,12 +22,11 @@ const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqF
 // Using this value as a test as a nice number of delegates
 const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
 
-// This matches our output
 export class Reward extends Struct({
   index: Field,
   publicKey: PublicKey,
   rewards: UInt64
-}) { // Have the data concatenated here?
+}) {
   static blank(): Reward {
     return new Reward({
       index: Field(0),

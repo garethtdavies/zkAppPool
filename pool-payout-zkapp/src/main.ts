@@ -51,8 +51,8 @@ import {
   // Need to track these manually offline
   let feePayerNonce = 0;
   let zkAppAddressNonce = 0;
-  let index = 56;
-  let epochOracle = 39;
+  let index = 0;
+  let epochOracle = 40;
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
   // Why? Because we want to sign these all offline and get more than 1 tx in a block
