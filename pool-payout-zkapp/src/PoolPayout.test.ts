@@ -91,7 +91,7 @@ describe('pool payout', () => {
      */
     let rewardFields: Rewards2 = {
       rewards: [
-        Reward.blank(), Reward.blank()
+        Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank()
       ]
     };
     rewardFields.rewards[0].index = Field(0);
