@@ -113,7 +113,7 @@ import {
 
     console.log("Sending transaction");
     console.log(transaction.toPretty());
-    //await transaction.send();
+    await transaction.send();
   } catch (error: any) {
     console.log("There was an issue");
     console.log(error.message);
