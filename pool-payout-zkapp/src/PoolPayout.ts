@@ -1,11 +1,3 @@
-/*
-TODO use the onchain data for the fee payout
-Use the on chain data for calculating the rewards
-Handle the case where we have less than 9 in the array
-Tidy up keys in scripts
-Pass the index by variable to the script
-*/
-
 import {
   Field,
   SmartContract,
