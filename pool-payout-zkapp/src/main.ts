@@ -51,14 +51,15 @@ import {
   // Need to track these manually offline
   let feePayerNonce = 0;
   let zkAppAddressNonce = 0;
-  let index = 0;
+  let index = 16;
+  let epochOracle = 39;
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
   // Why? Because we want to sign these all offline and get more than 1 tx in a block
 
   // Function URL
   // TODO pass the epoch via the command line - hardcoded here for testing
-  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39&index=" + index;
+  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=" + epochOracle + "&index=" + index;
 
   console.log(functionUrl);
 
