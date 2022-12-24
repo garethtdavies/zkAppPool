@@ -34,7 +34,7 @@ import {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qihz5QxyK8C93KAUxvv1fXB1fdirWA5tj4QUhboenxhGtjp7ipm3");
+  const zkAppAddress = PublicKey.fromBase58("B62qnLCwU65ZC7yuhPc7hGS2wwSokms4m3zbkU6Nk9nphRH8PtMxSmb");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
@@ -49,8 +49,8 @@ import {
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
   // Need to track these manually offline
-  let feePayerNonce = 466;
-  let zkAppAddressNonce = 2;
+  let feePayerNonce = 0;
+  let zkAppAddressNonce = 0;
   let index = 0;
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 

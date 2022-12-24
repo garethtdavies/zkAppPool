@@ -24,6 +24,12 @@
       "keyPath": "keys/init.json",
       "fee": "0.1",
       "smartContract": "PoolPayout"
+    },
+    "post": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/post.json",
+      "fee": "0.1",
+      "smartContract": "PoolPayout"
     }
   }
 }
