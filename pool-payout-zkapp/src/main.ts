@@ -8,11 +8,8 @@ import {
   Mina,
   PrivateKey,
   PublicKey,
-  UInt32,
   UInt64,
   Signature,
-  AccountUpdate,
-  Bool,
   Field,
   fetchAccount,
 } from 'snarkyjs';
@@ -51,7 +48,7 @@ import {
   // Need to track these manually offline
   let feePayerNonce = 0;
   let zkAppAddressNonce = 0;
-  let index = 0;
+  let index = 8;
   let epochOracle = 39;
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
