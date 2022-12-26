@@ -95,7 +95,7 @@ exports.handler = async (event) => {
 
   //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
   //const epochEvent = "39";
-  //let indexEvent = 55;
+  //let indexEvent = 58;
   //const limit = 9;
 
   // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
@@ -187,6 +187,20 @@ exports.handler = async (event) => {
 
     indexEvent++;
   });
+
+  // Handle the case where we have less than 8
+  for (let i = trimmedStakingData.length; i < 8; i++) {
+
+    signedData = signedData.concat(UInt32.from(0).toFields()).concat(PublicKey.empty().toFields()).concat(UInt64.from(0).toFields());
+
+    outputArray.push({
+      index: UInt32.from(0),
+      publicKey: PublicKey.empty(),
+      rewards: UInt64.from(0)
+    });
+
+
+  }
 
   // Add data for the fee payout
   const epochToField = UInt32.from(epochEvent);

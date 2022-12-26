@@ -1,11 +1,3 @@
-/*
-TODO use the onchain data for the fee payout
-Use the on chain data for calculating the rewards
-Handle the case where we have less than 9 in the array
-Tidy up keys in scripts
-Pass the index by variable to the script
-*/
-
 import {
   Field,
   SmartContract,
@@ -30,12 +22,11 @@ const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqF
 // Using this value as a test as a nice number of delegates
 const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
 
-// This matches our output
 export class Reward extends Struct({
   index: Field,
   publicKey: PublicKey,
   rewards: UInt64
-}) { // Have the data concatenated here?
+}) {
   static blank(): Reward {
     return new Reward({
       index: Field(0),
@@ -54,7 +45,7 @@ export class FeePayout extends Struct({
 }) { }
 
 export class Rewards2 extends Struct({
-  rewards: Circuit.array(Reward, 2),
+  rewards: Circuit.array(Reward, 8),
 }) { }
 
 export class PoolPayout extends SmartContract {
@@ -163,10 +154,10 @@ export class PoolPayout extends SmartContract {
       signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields());
 
       // calculate the rewards
-      let payoutPercentage = UInt64.from(100).sub(UInt64.from(5));
+      let payoutPercentage = UInt64.from(100).sub(UInt64.from(5)); //TODO use on-chain variable here
       let payout = Circuit.if(
         accountIsNotEmpty,
-        (() => reward.rewards.mul(payoutPercentage).div(100))(), // Temp make this smaller as easier to pay
+        (() => reward.rewards.mul(payoutPercentage).div(100).div(1000))(), // TODO Temp make this smaller as easier to pay
         (() => UInt64.zero)()
       )
       payout.assertLte(reward.rewards);
@@ -208,8 +199,8 @@ export class PoolPayout extends SmartContract {
     // If we are at the number of delegators we can send the fees to the onchain validated public key
     const [validatorCut, i, e] = Circuit.if(
       transactionIndex.gte(feePayout.numDelegates),
-      (() => [feePayout.payout.mul(5).div(100), Field(0), epoch.add(1)])(),
-      (() => [UInt64.from(0), currentIndex, epoch])()
+      (() => [feePayout.payout.mul(5).div(100).div(1000), Field(0), epoch.add(1)])(), //TODO temp make this much smaller for managable payouts
+      (() => [UInt64.from(0), transactionIndex, epoch])()
     )
 
     Circuit.asProver(() => {

@@ -91,16 +91,16 @@ describe('pool payout', () => {
      */
     let rewardFields: Rewards2 = {
       rewards: [
-        Reward.blank(), Reward.blank()
+        Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank()
       ]
     };
     rewardFields.rewards[0].index = Field(0);
     rewardFields.rewards[0].publicKey = delegator1PrivateKey.toPublicKey();
-    rewardFields.rewards[0].rewards = UInt64.from(1000);
+    rewardFields.rewards[0].rewards = UInt64.from(1000).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
 
     let feePayout = new FeePayout({
       numDelegates: Field(1),
-      payout: UInt64.from(1000),
+      payout: UInt64.from(1000).mul(1000), // TODO while testing use 1000th of the rewards to make it easy
     })
 
     let signedData: Field[] = [];
