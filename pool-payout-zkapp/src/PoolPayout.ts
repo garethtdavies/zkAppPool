@@ -160,7 +160,7 @@ export class PoolPayout extends SmartContract {
       signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields());
 
       // Calculate the rewards
-      let payoutPercentage = UInt64.from(100).sub(UInt64.from(5)); //TODO use on-chain variable here
+      let payoutPercentage = UInt64.from(100).sub(feePercentage.toUInt64()); //TODO use on-chain variable here
       let payout = Circuit.if(
         accountIsNotEmpty,
         (() => reward.rewards.mul(payoutPercentage).div(100).div(1000))(), // TODO Temp make this smaller as easier to pay
@@ -204,7 +204,7 @@ export class PoolPayout extends SmartContract {
     // If we are at the number of delegators we can send the fees to the onchain validated public key
     const [validatorCut, i, e] = Circuit.if(
       transactionIndex.gte(feePayout.numDelegates),
-      (() => [feePayout.payout.mul(5).div(100).div(1000), Field(0), epoch.add(1)])(), //TODO temp make this much smaller for managable payouts
+      (() => [feePayout.payout.mul(feePercentage.toUInt64()).div(100).div(1000), Field(0), epoch.add(1)])(), //TODO temp make this much smaller for managable payouts
       (() => [UInt64.from(0), transactionIndex, epoch])()
     )
 

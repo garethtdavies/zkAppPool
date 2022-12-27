@@ -60,7 +60,17 @@ describe('pool payout', () => {
     const startingEpoch = Field(39);
     const startingIndex = Field(0);
     const testOracle = PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING).toPublicKey();
-    
+
+    const tx2 = await Mina.transaction(deployerPrivateKey, () => {
+      pool.updateEpoch(startingEpoch);
+      pool.updateIndex(startingIndex);
+      pool.updateOracle(testOracle);
+      pool.updateValidator(validatorPrivateKey.toPublicKey());
+    });
+    tx2.sign([deployerPrivateKey, zkappPrivateKey]);
+    await tx2.prove();
+    await tx2.send();
+
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
     const startingValidatorBalance = Mina.getAccount(validatorPrivateKey.toPublicKey()).balance;
@@ -94,17 +104,17 @@ describe('pool payout', () => {
     })
     signedData = signedData.concat(startingEpoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
 
+    // TODO temp this is the same as in the lambda-payouts oracle but need to find a different way
     const signature = Signature.create(
       PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING),
       signedData
     )
 
-    console.log(rewardFields, feePayout, startingEpoch, signature);
-
+    // Make the payouts
     let tx3 = await Mina.transaction(deployerPrivateKey, () => {
       pool.sendReward(rewardFields, feePayout, startingEpoch, signature);
     });
-    tx3.sign([deployerPrivateKey]);
+    console.log("Proving transaction tx3");
     await tx3.prove();
     await tx3.send();
 
