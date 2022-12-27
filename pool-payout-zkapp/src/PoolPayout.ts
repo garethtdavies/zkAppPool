@@ -20,6 +20,15 @@ const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqF
 // The public key of the block producer  - this cannot be changed once the contract is deployed.
 const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
 
+// The fee charged by the block producer
+const VALIDATOR_FEE = 5;
+
+// The initial epoch
+const INITIAL_EPOCH = 39;
+
+// The initial index
+const INITIAL_INDEX = 0;
+
 export class Reward extends Struct({
   index: Field,
   publicKey: PublicKey,
@@ -82,9 +91,9 @@ export class PoolPayout extends SmartContract {
       setZkappUri: Permissions.proof(),
     });
 
-    this.currentEpoch.set(Field(39));
-    this.currentIndex.set(Field(0));
-    this.feePercentage.set(UInt32.from(5));
+    this.currentEpoch.set(Field(INITIAL_EPOCH));
+    this.currentIndex.set(Field(INITIAL_INDEX));
+    this.feePercentage.set(UInt32.from(VALIDATOR_FEE));
     this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
   }
@@ -190,7 +199,7 @@ export class PoolPayout extends SmartContract {
     const validSignature = signature.verify(oraclePublicKey, signedData);
 
     // Check that the signature is valid if it isn't the whole transaction will fail
-    validSignature.assertTrue();
+    validSignature.assertTrue("The signature does not match that of the oracle");
 
     // If we are at the number of delegators we can send the fees to the onchain validated public key
     const [validatorCut, i, e] = Circuit.if(

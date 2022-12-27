@@ -5,13 +5,8 @@ import {
   PrivateKey,
   PublicKey,
   AccountUpdate,
-  MerkleMap,
   Field,
-  Poseidon,
-  Circuit,
   Signature,
-  Encryption,
-  Int64,
   UInt64,
 } from 'snarkyjs';
 
@@ -62,19 +57,9 @@ describe('pool payout', () => {
     tx.sign([deployerPrivateKey]);
     await tx.send();
 
-    const startingEpoch = Field(10);
+    const startingEpoch = Field(39);
     const startingIndex = Field(0);
     const testOracle = PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING).toPublicKey();
-
-    const tx2 = await Mina.transaction(deployerPrivateKey, () => {
-      pool.updateEpoch(startingEpoch);
-      pool.updateIndex(startingIndex);
-      pool.updateOracle(testOracle);
-      pool.updateValidator(validatorPrivateKey.toPublicKey());
-    });
-    tx2.sign([deployerPrivateKey, zkappPrivateKey]);
-    await tx2.prove();
-    await tx2.send();
     
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
@@ -113,6 +98,8 @@ describe('pool payout', () => {
       PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING),
       signedData
     )
+
+    console.log(rewardFields, feePayout, startingEpoch, signature);
 
     let tx3 = await Mina.transaction(deployerPrivateKey, () => {
       pool.sendReward(rewardFields, feePayout, startingEpoch, signature);
