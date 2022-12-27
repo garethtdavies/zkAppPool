@@ -1,4 +1,4 @@
-//https://berkeley.minaexplorer.com/transaction/CkpaG8iqhthWpvMhUCcJG6n51ojPJaQLbwKGMQMJfFMabaF3b9XKE
+// npm run build && node build/src/main.js 0 39 15
 
 import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
@@ -46,13 +46,12 @@ import {
   await fetchAccount({ publicKey: zkAppAddress });
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
-  // Need to track these manually offline
-  let feePayerNonce = 15;
-  let index = 0;
-  let epochOracle = 39;
+  // get these values from the command line currently
+  const index = process.argv[2];
+  const epochOracle = process.argv[3];
+  const feePayerNonce = process.argv[4];
 
   // Function URL
-  // TODO pass the epoch via the command line - hardcoded here for testing
   let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=" + epochOracle + "&index=" + index;
 
   console.log(functionUrl);
@@ -96,7 +95,7 @@ import {
 
   try {
     let transaction = await Mina.transaction(
-      { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: feePayerNonce },
+      { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
       () => {
         // All accounts must be in the ledger to delegate
         zkAppInstance.sendReward(rewardFields, feePayout, epoch, signature);
