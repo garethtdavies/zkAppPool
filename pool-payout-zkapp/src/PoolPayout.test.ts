@@ -5,18 +5,13 @@ import {
   PrivateKey,
   PublicKey,
   AccountUpdate,
-  MerkleMap,
   Field,
-  Poseidon,
-  Circuit,
   Signature,
-  Encryption,
-  Int64,
   UInt64,
 } from 'snarkyjs';
 
 import { PoolPayout, Reward, Rewards2, FeePayout } from './PoolPayout';
-import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PRIVATE_KEY_TESTING } from './constants';
+import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PUBLIC_KEY_TESTING } from './constants';
 
 await isReady;
 await PoolPayout.compile();
@@ -27,18 +22,18 @@ describe('pool payout', () => {
 
   let deployerPrivateKey: PrivateKey;
   let delegator1PrivateKey: PrivateKey;
-  let validatorPrivateKey: PrivateKey;
+  let validatorPublicKey: PublicKey;
 
   beforeEach(async () => {
     const Local = Mina.LocalBlockchain();
     Mina.setActiveInstance(Local);
 
-    zkappPrivateKey = PrivateKey.random();
+    zkappPrivateKey = Local.testAccounts[2].privateKey;
     zkappAddress = zkappPrivateKey.toPublicKey();
 
     deployerPrivateKey = Local.testAccounts[0].privateKey;
     delegator1PrivateKey = Local.testAccounts[1].privateKey;
-    validatorPrivateKey = PrivateKey.fromBase58(VALIDATOR_PRIVATE_KEY_TESTING);
+    validatorPublicKey = PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY_TESTING);
   });
 
   afterAll(async () => {
@@ -50,38 +45,23 @@ describe('pool payout', () => {
     const pool = new PoolPayout(zkappAddress);
     const tx = await Mina.transaction(deployerPrivateKey, () => {
       AccountUpdate.fundNewAccount(deployerPrivateKey);
-      AccountUpdate.fundNewAccount(deployerPrivateKey);
       pool.deploy({ zkappKey: zkappPrivateKey });
-      const fundPool = AccountUpdate.create(deployerPrivateKey.toPublicKey());
-      fundPool.send({ to: zkappAddress, amount: 1_000_000_000 });
-      fundPool.requireSignature();
       const createValidatorAccount = AccountUpdate.create(deployerPrivateKey.toPublicKey());
-      createValidatorAccount.send({ to: validatorPrivateKey.toPublicKey(), amount: 1 });
+      createValidatorAccount.send({ to: validatorPublicKey, amount: 1 });
       createValidatorAccount.requireSignature();
     });
     tx.sign([deployerPrivateKey]);
     await tx.send();
 
-    const startingEpoch = Field(10);
-    const startingIndex = Field(0);
-    const testOracle = PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING).toPublicKey();
+    // This matches what we have deployed in our init() method
+    const startingEpoch = Field(39);
 
-    const tx2 = await Mina.transaction(deployerPrivateKey, () => {
-      pool.updateEpoch(startingEpoch);
-      pool.updateIndex(startingIndex);
-      pool.updateOracle(testOracle);
-      pool.updateValidator(validatorPrivateKey.toPublicKey());
-    });
-    tx2.sign([deployerPrivateKey, zkappPrivateKey]);
-    await tx2.prove();
-    await tx2.send();
-    
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
-    const startingValidatorBalance = Mina.getAccount(validatorPrivateKey.toPublicKey()).balance;
-    console.log(`Delegator Starting Balance: ${startingDelegator1Balance.toString()}`)
-    console.log(`ZKAPP starting balance: ${startingZkAppBalance.toString()}`)
-    console.log(`Validator starting balance: ${startingValidatorBalance.toString()}`)
+    const startingValidatorBalance = Mina.getAccount(validatorPublicKey).balance;
+    console.log(`Delegator Starting Balance: ${startingDelegator1Balance.toString()} ${delegator1PrivateKey.toPublicKey().toBase58()}`)
+    console.log(`ZKAPP starting balance: ${startingZkAppBalance.toString()} ${zkappPrivateKey.toPublicKey().toBase58()}`)
+    console.log(`Validator starting balance: ${startingValidatorBalance.toString()} ${validatorPublicKey.toBase58()}`)
 
 
     /**
@@ -109,21 +89,27 @@ describe('pool payout', () => {
     })
     signedData = signedData.concat(startingEpoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
 
+    // TODO temp this is the same as in the lambda-payouts oracle but need to find a different way
     const signature = Signature.create(
       PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING),
       signedData
     )
 
-    let tx3 = await Mina.transaction(deployerPrivateKey, () => {
+    // Make the payouts
+    let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
       pool.sendReward(rewardFields, feePayout, startingEpoch, signature);
     });
-    tx3.sign([deployerPrivateKey]);
-    await tx3.prove();
-    await tx3.send();
+    tx2.sign([deployerPrivateKey]);
+    console.log("Proving transaction");
+    await tx2.prove();
+
+    console.log("Sending transaction");
+    console.log(tx2.toPretty());
+    await tx2.send();
 
     // Payouts | Delegator 1: 950, Validator: 50
     const delegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
-    const validatorBalance = Mina.getAccount(validatorPrivateKey.toPublicKey()).balance;
+    const validatorBalance = Mina.getAccount(validatorPublicKey).balance;
     expect(delegator1Balance.sub(startingDelegator1Balance).toString()).toBe('950');
     expect(validatorBalance.sub(startingValidatorBalance).toString()).toBe('50');
 

@@ -4,7 +4,6 @@ import {
   state,
   State,
   method,
-  DeployArgs,
   Permissions,
   PublicKey,
   Signature,
@@ -13,14 +12,22 @@ import {
   Struct,
   Circuit,
   Bool,
-  PrivateKey,
 } from 'snarkyjs';
 
-// The public key of our trusted data provider
+// The public key of our trusted data provider - this cannot be changed once the contract is deployed.
 const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
 
-// Using this value as a test as a nice number of delegates
+// The public key of the block producer  - this cannot be changed once the contract is deployed.
 const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
+
+// The fee charged by the block producer
+const VALIDATOR_FEE = 5;
+
+// The initial epoch
+const INITIAL_EPOCH = 39;
+
+// The initial index
+const INITIAL_INDEX = 0;
 
 export class Reward extends Struct({
   index: Field,
@@ -50,96 +57,95 @@ export class Rewards2 extends Struct({
 
 export class PoolPayout extends SmartContract {
 
-  // The latest epoch - will init this variable to have a starting point
+  // The latest epoch of the payout - this (and all state) can only be updated via a proof.
   @state(Field) currentEpoch = State<Field>();
 
-  // The current index of the payout run
+  // The current index of the payout run.
   @state(Field) currentIndex = State<Field>();
 
-  // Fee
+  // The fee of the block producer
   @state(UInt32) feePercentage = State<UInt32>();
 
-  // The Oracle public key (takes 2)
+  // The oracle public key (takes 2)
   @state(PublicKey) oraclePublicKey = State<PublicKey>();
 
-  // Validator key (takes 2)
+  // Block producer key (takes 2)
   @state(PublicKey) validatorPublicKey = State<PublicKey>();
 
-  // Deploy this - tighten permissions and move init stuff to an init method
-  deploy(args: DeployArgs) {
-    super.deploy(args);
+  // Set the initial state of the zkApp - this is done via a proof and can't then be updated again
+  init() {
+    super.init()
+
     this.setPermissions({
       ...Permissions.default(),
-      editSequenceState: Permissions.proofOrSignature(),
-      editState: Permissions.proofOrSignature(),
-      incrementNonce: Permissions.proofOrSignature(),
+      editSequenceState: Permissions.proof(), // No need for this
+      editState: Permissions.proof(), //TODO this should be proof only
+      incrementNonce: Permissions.proof(),
       receive: Permissions.none(),
-      send: Permissions.proofOrSignature(),
-      setDelegate: Permissions.impossible(),
-      setPermissions: Permissions.proofOrSignature(),
-      setTokenSymbol: Permissions.proofOrSignature(),
-      setVerificationKey: Permissions.proofOrSignature(),
-      setVotingFor: Permissions.proofOrSignature(),
-      setZkappUri: Permissions.impossible(),
+      send: Permissions.proof(), // Can only send via a proof
+      setDelegate: Permissions.proof(), // Could delegate to self 
+      setPermissions: Permissions.proof(),
+      setTokenSymbol: Permissions.proof(),
+      setVerificationKey: Permissions.proof(),
+      setVotingFor: Permissions.proof(),
+      setZkappUri: Permissions.proof(),
     });
 
-    this.currentEpoch.set(Field(39));
-    this.currentIndex.set(Field(0));
-    this.feePercentage.set(UInt32.from(5));
+    this.currentEpoch.set(Field(INITIAL_EPOCH));
+    this.currentIndex.set(Field(INITIAL_INDEX));
+    this.feePercentage.set(UInt32.from(VALIDATOR_FEE));
     this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
     this.validatorPublicKey.set(PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY));
   }
 
-  @method
   updateEpoch(n: Field) {
     this.currentEpoch.set(n);
   }
 
-  @method
   updateIndex(i: Field) {
     this.currentIndex.set(i);
   }
 
-  @method
   updateOracle(publicKey: PublicKey) {
     this.oraclePublicKey.set(publicKey);
   }
 
-  @method
   updateValidator(publicKey: PublicKey) {
     this.validatorPublicKey.set(publicKey);
   }
 
-  // This method sends the rewards to the validator
-  // It verifies the index and epoch from the oracle
-  @method sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
+  // This method sends rewards to delegators (up to 8) with a proof.
+  // If it is the last payout of the epoch, it sends the block producer rewards.
+  // It validates a signature from the oracle.
+  // Once complete it updates the state to the latest epoch and epoch.
+  @method
+  sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
 
-    // get the current epoch
+    // Get the current epoch stored on-chain
     let currentEpoch = this.currentEpoch.get();
     this.currentEpoch.assertEquals(currentEpoch);
     epoch.assertEquals(currentEpoch, "The epoch must match");
 
-    // get the current index
+    // Get the current index stored on-chain
     let currentIndex = this.currentIndex.get();
     this.currentIndex.assertEquals(currentIndex);
     //Circuit.log(currentIndex);
 
-    // get the current fee
+    // Get the fee stored on-chain.
     const feePercentage = this.feePercentage.get();
-    //Circuit.log(feePercentage);
     this.feePercentage.assertEquals(feePercentage);
 
-    // Assert the validating key on chain
+    // Get the oracle public key stored on-chain.
     const oraclePublicKey = this.oraclePublicKey.get();
     this.oraclePublicKey.assertEquals(oraclePublicKey);
 
-    // get the current validator
+    // Get the block producer stored on-chain.
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorPublicKey);
 
     let signedData: Field[] = [];
 
-    // starting with the index on state, we can increment this variable during this transaction
+    // Starting with the index on state, we can increment this variable during this transaction
     let transactionIndex = currentIndex;
 
     for (let i = 0; i < accounts.rewards.length; i++) {
@@ -150,10 +156,10 @@ export class PoolPayout extends SmartContract {
       const indexCheck = Bool.or(Bool.not(accountIsNotEmpty), reward.index.equals(transactionIndex));
       indexCheck.assertEquals(Bool(true), "The index must match");
 
-      // reconstruct the signed data
+      // Reconstruct the signed data
       signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields());
 
-      // calculate the rewards
+      // Calculate the rewards
       let payoutPercentage = UInt64.from(100).sub(UInt64.from(5)); //TODO use on-chain variable here
       let payout = Circuit.if(
         accountIsNotEmpty,
@@ -171,7 +177,7 @@ export class PoolPayout extends SmartContract {
         )
       })
 
-      // If we made it this far we can send the 
+      // If we made it this far we can create the account updates for the transaction. It can still fail when we assert the signature.
       this.send({
         to: reward.publicKey,
         amount: payout
@@ -192,10 +198,9 @@ export class PoolPayout extends SmartContract {
 
     const validSignature = signature.verify(oraclePublicKey, signedData);
 
-    // Check that the signature is valid if it isn't the transaction will fail
-    validSignature.assertTrue();
+    // Check that the signature is valid if it isn't the whole transaction will fail
+    validSignature.assertTrue("The signature does not match that of the oracle");
 
-    // Debugging control flow
     // If we are at the number of delegators we can send the fees to the onchain validated public key
     const [validatorCut, i, e] = Circuit.if(
       transactionIndex.gte(feePayout.numDelegates),
@@ -209,6 +214,7 @@ export class PoolPayout extends SmartContract {
       )
     })
 
+    // Update the on-chain state
     this.currentEpoch.set(e);
     this.currentIndex.set(i);
     this.send({

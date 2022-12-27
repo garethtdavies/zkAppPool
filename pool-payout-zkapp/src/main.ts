@@ -8,11 +8,8 @@ import {
   Mina,
   PrivateKey,
   PublicKey,
-  UInt32,
   UInt64,
   Signature,
-  AccountUpdate,
-  Bool,
   Field,
   fetchAccount,
 } from 'snarkyjs';
@@ -34,7 +31,7 @@ import {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qnLCwU65ZC7yuhPc7hGS2wwSokms4m3zbkU6Nk9nphRH8PtMxSmb");
+  const zkAppAddress = PublicKey.fromBase58("B62qqKSeseTN6Y13DY6xFidKdhRCu6xhECYhekhTuVYJss9sktsMPn3");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
@@ -51,8 +48,8 @@ import {
   // Need to track these manually offline
   let feePayerNonce = 0;
   let zkAppAddressNonce = 0;
-  let index = 0;
-  let epochOracle = 40;
+  let index = 8;
+  let epochOracle = 39;
 
   // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
   // Why? Because we want to sign these all offline and get more than 1 tx in a block
