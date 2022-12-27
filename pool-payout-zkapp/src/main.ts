@@ -1,4 +1,5 @@
 // npm run build && node build/src/main.js 0 39 15
+// Arguments are index, nonce and feePayer nonce
 
 import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
@@ -13,6 +14,7 @@ import {
   Field,
   fetchAccount,
 } from 'snarkyjs';
+import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
 
 (async function main() {
 
@@ -107,7 +109,8 @@ import {
 
     console.log("Sending transaction");
     console.log(transaction.toPretty());
-    await transaction.send();
+    let sent = await transaction.send();
+    console.log(sent.hash());
   } catch (error: any) {
     console.log("There was an issue");
     console.log(error.message);
