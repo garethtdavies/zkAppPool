@@ -57,19 +57,10 @@ describe('pool payout', () => {
     tx.sign([deployerPrivateKey]);
     await tx.send();
 
+    // This matches what we have deployed in our init() method
     const startingEpoch = Field(39);
     const startingIndex = Field(0);
     const testOracle = PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING).toPublicKey();
-
-    const tx2 = await Mina.transaction(deployerPrivateKey, () => {
-      pool.updateEpoch(startingEpoch);
-      pool.updateIndex(startingIndex);
-      pool.updateOracle(testOracle);
-      pool.updateValidator(validatorPrivateKey.toPublicKey());
-    });
-    tx2.sign([deployerPrivateKey, zkappPrivateKey]);
-    await tx2.prove();
-    await tx2.send();
 
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
@@ -111,12 +102,15 @@ describe('pool payout', () => {
     )
 
     // Make the payouts
-    let tx3 = await Mina.transaction(deployerPrivateKey, () => {
+    let tx2 = await Mina.transaction(deployerPrivateKey, () => {
       pool.sendReward(rewardFields, feePayout, startingEpoch, signature);
     });
-    console.log("Proving transaction tx3");
-    await tx3.prove();
-    await tx3.send();
+    console.log("Proving transaction");
+    await tx2.prove();
+
+    console.log("Sending transaction");
+    console.log(tx2.toPretty());
+    await tx2.send();
 
     // Payouts | Delegator 1: 950, Validator: 50
     const delegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
