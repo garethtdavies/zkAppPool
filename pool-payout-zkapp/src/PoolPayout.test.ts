@@ -11,7 +11,7 @@ import {
 } from 'snarkyjs';
 
 import { PoolPayout, Reward, Rewards2, FeePayout } from './PoolPayout';
-import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PRIVATE_KEY_TESTING } from './constants';
+import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PUBLIC_KEY_TESTING } from './constants';
 
 await isReady;
 await PoolPayout.compile();
@@ -22,7 +22,7 @@ describe('pool payout', () => {
 
   let deployerPrivateKey: PrivateKey;
   let delegator1PrivateKey: PrivateKey;
-  let validatorPrivateKey: PrivateKey;
+  let validatorPublicKey: PublicKey;
 
   beforeEach(async () => {
     const Local = Mina.LocalBlockchain();
@@ -33,7 +33,7 @@ describe('pool payout', () => {
 
     deployerPrivateKey = Local.testAccounts[0].privateKey;
     delegator1PrivateKey = Local.testAccounts[1].privateKey;
-    validatorPrivateKey = PrivateKey.fromBase58(VALIDATOR_PRIVATE_KEY_TESTING);
+    validatorPublicKey = PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY_TESTING);
   });
 
   afterAll(async () => {
@@ -47,7 +47,7 @@ describe('pool payout', () => {
       AccountUpdate.fundNewAccount(deployerPrivateKey);
       pool.deploy({ zkappKey: zkappPrivateKey });
       const createValidatorAccount = AccountUpdate.create(deployerPrivateKey.toPublicKey());
-      createValidatorAccount.send({ to: validatorPrivateKey.toPublicKey(), amount: 1 });
+      createValidatorAccount.send({ to: validatorPublicKey, amount: 1 });
       createValidatorAccount.requireSignature();
     });
     tx.sign([deployerPrivateKey]);
@@ -58,10 +58,10 @@ describe('pool payout', () => {
 
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
-    const startingValidatorBalance = Mina.getAccount(validatorPrivateKey.toPublicKey()).balance;
+    const startingValidatorBalance = Mina.getAccount(validatorPublicKey).balance;
     console.log(`Delegator Starting Balance: ${startingDelegator1Balance.toString()} ${delegator1PrivateKey.toPublicKey().toBase58()}`)
     console.log(`ZKAPP starting balance: ${startingZkAppBalance.toString()} ${zkappPrivateKey.toPublicKey().toBase58()}`)
-    console.log(`Validator starting balance: ${startingValidatorBalance.toString()} ${validatorPrivateKey.toPublicKey().toBase58()}`)
+    console.log(`Validator starting balance: ${startingValidatorBalance.toString()} ${validatorPublicKey.toBase58()}`)
 
 
     /**
@@ -76,11 +76,11 @@ describe('pool payout', () => {
     };
     rewardFields.rewards[0].index = Field(0);
     rewardFields.rewards[0].publicKey = delegator1PrivateKey.toPublicKey();
-    rewardFields.rewards[0].rewards = UInt64.from(1_000_000_000).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
+    rewardFields.rewards[0].rewards = UInt64.from(1000).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
 
     let feePayout = new FeePayout({
       numDelegates: Field(1),
-      payout: UInt64.from(1_000_000_000).mul(1000), // TODO while testing use 1000th of the rewards to make it easy
+      payout: UInt64.from(1000).mul(1000), // TODO while testing use 1000th of the rewards to make it easy
     })
 
     let signedData: Field[] = [];
@@ -109,7 +109,7 @@ describe('pool payout', () => {
 
     // Payouts | Delegator 1: 950, Validator: 50
     const delegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
-    const validatorBalance = Mina.getAccount(validatorPrivateKey.toPublicKey()).balance;
+    const validatorBalance = Mina.getAccount(validatorPublicKey).balance;
     expect(delegator1Balance.sub(startingDelegator1Balance).toString()).toBe('950');
     expect(validatorBalance.sub(startingValidatorBalance).toString()).toBe('50');
 
