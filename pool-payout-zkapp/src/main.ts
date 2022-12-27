@@ -1,4 +1,4 @@
-//https://berkeley.minaexplorer.com/transaction/CkpaG8iqhthWpvMhUCcJG6n51ojPJaQLbwKGMQMJfFMabaF3b9XKE
+// npm run build && node build/src/main.js 0 39 15
 
 import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
@@ -27,11 +27,12 @@ import {
   Mina.setActiveInstance(Berkeley);
 
   let transactionFee = 100_000_000;
+  // B62qqPo32ULMxYW745CFdF1z8KAtxbT6Du7jnxVy2XWrBxryQeX72HH
   let feePayerPrivateKey = PrivateKey.fromBase58(
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qqKSeseTN6Y13DY6xFidKdhRCu6xhECYhekhTuVYJss9sktsMPn3");
+  const zkAppAddress = PublicKey.fromBase58("B62qkB9vHzqLd6itsg3b9oMKJLVGhXShffXNXqqvgXqF3fJrmeHiJdo");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
@@ -45,17 +46,12 @@ import {
   await fetchAccount({ publicKey: zkAppAddress });
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
-  // Need to track these manually offline
-  let feePayerNonce = 0;
-  let zkAppAddressNonce = 0;
-  let index = 8;
-  let epochOracle = 39;
-
-  // TODO need to manually set the fee payer nonce and zkApp nonce, plus keep track of the index. 
-  // Why? Because we want to sign these all offline and get more than 1 tx in a block
+  // get these values from the command line currently
+  const index = process.argv[2];
+  const epochOracle = process.argv[3];
+  const feePayerNonce = process.argv[4];
 
   // Function URL
-  // TODO pass the epoch via the command line - hardcoded here for testing
   let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=" + epochOracle + "&index=" + index;
 
   console.log(functionUrl);
@@ -99,9 +95,9 @@ import {
 
   try {
     let transaction = await Mina.transaction(
-      { feePayerKey: feePayerPrivateKey, fee: transactionFee },
+      { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
       () => {
-        //AccountUpdate.fundNewAccount(feePayerPrivateKey);
+        // All accounts must be in the ledger to delegate
         zkAppInstance.sendReward(rewardFields, feePayout, epoch, signature);
       }
     );
