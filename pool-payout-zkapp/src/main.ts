@@ -34,7 +34,7 @@ import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qkB9vHzqLd6itsg3b9oMKJLVGhXShffXNXqqvgXqF3fJrmeHiJdo");
+  const zkAppAddress = PublicKey.fromBase58("B62qopsZcBvfQAL7pscfzkJLEhvMihA7DogbjSUZBaNB1uheVrURgze");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
