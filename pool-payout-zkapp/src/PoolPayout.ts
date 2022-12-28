@@ -119,7 +119,7 @@ export class PoolPayout extends SmartContract {
   // It validates a signature from the oracle.
   // Once complete it updates the state to the latest epoch and epoch.
   @method
-  sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, signature: Signature) {
+  sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, index: Field, signature: Signature) {
 
     // Get the current epoch stored on-chain
     let currentEpoch = this.currentEpoch.get();
@@ -146,7 +146,7 @@ export class PoolPayout extends SmartContract {
     let signedData: Field[] = [];
 
     // Starting with the index on state, we can increment this variable during this transaction
-    let transactionIndex = currentIndex;
+    let transactionIndex = index;
 
     for (let i = 0; i < accounts.rewards.length; i++) {
       const reward = accounts.rewards[i];

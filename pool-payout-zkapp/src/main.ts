@@ -49,7 +49,7 @@ import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
   // get these values from the command line currently
-  const index = process.argv[2];
+  const index = Field(process.argv[2]);
   const epochOracle = process.argv[3];
   const feePayerNonce = process.argv[4];
 
@@ -100,7 +100,7 @@ import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
       { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
       () => {
         // All accounts must be in the ledger to delegate
-        zkAppInstance.sendReward(rewardFields, feePayout, epoch, signature);
+        zkAppInstance.sendReward(rewardFields, feePayout, epoch, index, signature);
       }
     );
 
