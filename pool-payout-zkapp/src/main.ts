@@ -1,4 +1,5 @@
 // npm run build && node build/src/main.js 0 39 15
+// Arguments are index, nonce and feePayer nonce
 
 import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
@@ -13,6 +14,7 @@ import {
   Field,
   fetchAccount,
 } from 'snarkyjs';
+import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
 
 (async function main() {
 
@@ -32,7 +34,7 @@ import {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qkB9vHzqLd6itsg3b9oMKJLVGhXShffXNXqqvgXqF3fJrmeHiJdo");
+  const zkAppAddress = PublicKey.fromBase58("B62qqgFa44QQR9vwJqbSHKYdMdJCvFeNBBSZxXGderofrm3QkrHFP3i");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   console.log('Compiling smart contract...');
@@ -47,7 +49,7 @@ import {
 
   // Need to keep manual track of the nonces and current index so we can process many tx in a block
   // get these values from the command line currently
-  const index = process.argv[2];
+  const index = Field(process.argv[2]);
   const epochOracle = process.argv[3];
   const feePayerNonce = process.argv[4];
 
@@ -98,7 +100,7 @@ import {
       { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
       () => {
         // All accounts must be in the ledger to delegate
-        zkAppInstance.sendReward(rewardFields, feePayout, epoch, signature);
+        zkAppInstance.sendReward(rewardFields, feePayout, epoch, index, signature);
       }
     );
 
@@ -107,7 +109,8 @@ import {
 
     console.log("Sending transaction");
     console.log(transaction.toPretty());
-    await transaction.send();
+    let sent = await transaction.send();
+    console.log(sent.hash());
   } catch (error: any) {
     console.log("There was an issue");
     console.log(error.message);

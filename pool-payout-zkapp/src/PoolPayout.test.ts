@@ -55,6 +55,7 @@ describe('pool payout', () => {
 
     // This matches what we have deployed in our init() method
     const startingEpoch = Field(39);
+    const startingIndex = Field(0);
 
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
@@ -97,7 +98,7 @@ describe('pool payout', () => {
 
     // Make the payouts
     let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-      pool.sendReward(rewardFields, feePayout, startingEpoch, signature);
+      pool.sendReward(rewardFields, feePayout, startingEpoch, startingIndex, signature);
     });
     tx2.sign([deployerPrivateKey]);
     console.log("Proving transaction");
