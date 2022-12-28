@@ -128,7 +128,7 @@ export class PoolPayout extends SmartContract {
 
     // Get the current index stored on-chain
     let currentIndex = this.currentIndex.get();
-    this.currentIndex.assertEquals(currentIndex);
+    this.currentIndex.assertEquals(index);
     //Circuit.log(currentIndex);
 
     // Get the fee stored on-chain.
