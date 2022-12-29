@@ -55,7 +55,7 @@ import {
   const feePayerNonce = process.argv[4];
 
   // Function URL
-  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=" + validatorPublicKey + "&epoch=" + epochOracle + "&index=" + index;
+  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=" + validatorPublicKey.toBase58() + "&epoch=" + epochOracle + "&index=" + index;
 
   console.log(functionUrl);
 

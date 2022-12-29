@@ -142,6 +142,7 @@ export class PoolPayout extends SmartContract {
     // Get the block producer stored on-chain.
     let validatorPublicKey = this.validatorPublicKey.get();
     this.validatorPublicKey.assertEquals(validatorKey);
+    validatorKey.assertEquals(validatorPublicKey);
 
     let signedData: Field[] = [];
 
