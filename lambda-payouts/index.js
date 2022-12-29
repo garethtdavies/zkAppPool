@@ -147,8 +147,10 @@ exports.handler = async (event) => {
     const epochToField = snarkyjs_1.UInt32.from(epochEvent);
     const numDelegatesToField = snarkyjs_1.UInt32.from(numDelegators);
     const payoutToField = snarkyjs_1.UInt64.from(totalPoolToShare);
+    // Add the validator key so we can commit to it
+    const validatorToField = snarkyjs_1.PublicKey.fromBase58(eventKey);
     // We have signed all the reward data already
-    signedData = signedData.concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields());
+    signedData = signedData.concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields().concat(validatorToField.toFields()));
     const signature = snarkyjs_1.Signature.create(privateKey, signedData);
     const feePayout = {
         "numDelegates": numDelegatesToField,
@@ -158,6 +160,7 @@ exports.handler = async (event) => {
         rewards: outputArray,
         epoch: epochToField,
         feePayout: feePayout,
+        validatorKey: validatorToField,
         publicKey: signingKey,
         signature: signature
     };
