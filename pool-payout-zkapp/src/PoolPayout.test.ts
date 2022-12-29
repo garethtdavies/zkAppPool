@@ -11,7 +11,22 @@ import {
 } from 'snarkyjs';
 
 import { PoolPayout, Reward, Rewards2, FeePayout } from './PoolPayout';
-import { ORACLE_PRIVATE_KEY_TESTING, VALIDATOR_PUBLIC_KEY_TESTING } from './constants';
+import { BERKELEY_CONFIG, TEST_CONFIG, type PoolPayoutConfig } from './utils/constants';
+
+import Dotenv from "dotenv";
+
+Dotenv.config();
+let poolPayoutConfig: PoolPayoutConfig;
+switch(process.env.ENV) {
+  case 'MAIN_NET':
+    throw("Main net not supported yet");
+  case 'BERKELY':
+    poolPayoutConfig = BERKELEY_CONFIG;
+    break;
+  case 'TEST':
+  default:
+    poolPayoutConfig = TEST_CONFIG;
+}
 
 await isReady;
 await PoolPayout.compile();
@@ -33,12 +48,96 @@ describe('pool payout', () => {
 
     deployerPrivateKey = Local.testAccounts[0].privateKey;
     delegator1PrivateKey = Local.testAccounts[1].privateKey;
-    validatorPublicKey = PublicKey.fromBase58(VALIDATOR_PUBLIC_KEY_TESTING);
+    validatorPublicKey = PublicKey.fromBase58(poolPayoutConfig.validatorPublicKey);
   });
 
   afterAll(async () => {
     setTimeout(shutdown, 0);
   });
+
+  describe('deploy state', () => {
+    it('cannot redeploy', async () => {
+    });
+  
+    it('initializes correctly', async () => {
+  
+    });
+  
+    it('cannot trivially update state', async () => {
+  
+    });
+  });
+
+  describe('#sendReward', () => {
+    describe('invalid usage', () => {
+      it('throws for invalid epoch', async () => {
+
+      });
+
+      it('throws for invalid epoch', async () => {
+
+      });
+
+      it('throws for invalid signature', async () => {
+
+      });
+
+      it('throws for invalid validator key', async () => {
+
+      });
+
+      it('throws if called on current or future block', async () => {
+
+      });
+    });
+    describe('correct usage', () => {
+      describe('<= n payments', () => {
+        it('updates the state index', async () => {
+
+        });
+
+        it('updates the state epoch', async () => {
+
+        });
+
+        it('pays each delegator', async () => {
+
+        });
+      });
+
+      describe('> n payments', () => {
+        it('updates the state index', async () => {
+
+        });
+
+        it('does not update the state epoch', async () => {
+
+        });
+
+        it('pays first n delegators', async () => {
+
+        });
+      });
+
+      describe('Complete > n payments', () => {
+        it('updates the state index', async () => {
+
+        });
+
+        it('updates the state epoch', async () => {
+
+        });
+
+        it('pays each delegator', async () => {
+
+        });
+      });
+    });
+  });
+
+  // Integration tests with real oracle data
+  // Test for rounding errors / balance empty
+
 
   it('pays out', async () => {
     // setup
@@ -52,10 +151,6 @@ describe('pool payout', () => {
     });
     tx.sign([deployerPrivateKey]);
     await tx.send();
-
-    // This matches what we have deployed in our init() method
-    const startingEpoch = Field(39);
-    const startingIndex = Field(0);
 
     const startingDelegator1Balance = Mina.getAccount(delegator1PrivateKey.toPublicKey()).balance;
     const startingZkAppBalance = Mina.getAccount(zkappAddress).balance;
@@ -72,9 +167,10 @@ describe('pool payout', () => {
      */
     let rewardFields: Rewards2 = {
       rewards: [
-        Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank(), Reward.blank()
+        Reward.blank(), Reward.blank()
       ]
     };
+
     rewardFields.rewards[0].index = Field(0);
     rewardFields.rewards[0].publicKey = delegator1PrivateKey.toPublicKey();
     rewardFields.rewards[0].rewards = UInt64.from(1000).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
@@ -88,17 +184,23 @@ describe('pool payout', () => {
     rewardFields.rewards.forEach((reward) => {
       signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
     })
-    signedData = signedData.concat(startingEpoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+    signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
 
     // TODO temp this is the same as in the lambda-payouts oracle but need to find a different way
-    const signature = Signature.create(
-      PrivateKey.fromBase58(ORACLE_PRIVATE_KEY_TESTING),
-      signedData
-    )
+    let signature: Signature;
+    if(poolPayoutConfig.oraclePrivateKey) {
+      signature = Signature.create(
+        PrivateKey.fromBase58(poolPayoutConfig.oraclePrivateKey),
+        signedData
+      )
+    } else {
+      throw("Cannot test without the oracle private key");
+    }
+    
 
     // Make the payouts
     let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-      pool.sendReward(rewardFields, feePayout, startingEpoch, startingIndex, signature);
+      pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), signature);
     });
     tx2.sign([deployerPrivateKey]);
     console.log("Proving transaction");
@@ -120,6 +222,6 @@ describe('pool payout', () => {
 
     // Epoch has advanced
     const zkappState = Mina.getAccount(zkappAddress).appState;
-    expect(zkappState![0].toString()).toBe(Field(startingEpoch.add(1)).toString());
+    expect(zkappState![0].toString()).toBe(Field(poolPayoutConfig.deployEpoch + 1).toString());
   });
 });
