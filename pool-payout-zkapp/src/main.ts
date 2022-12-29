@@ -33,7 +33,7 @@ import {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qqgFa44QQR9vwJqbSHKYdMdJCvFeNBBSZxXGderofrm3QkrHFP3i");
+  const zkAppAddress = PublicKey.fromBase58("B62qivcDkFG43AFmwea343LPET4foHuQiYYu91fxjGuGf6WfPjGcQdx");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   const validatorPublicKey = PublicKey.fromBase58("B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg");
