@@ -73,6 +73,7 @@ exports.handler = async (event) => {
     rewards: Reward[];
     epoch: UInt32;
     feePayout: FeePayout;
+    validatorKey: PublicKey;
     publicKey: PublicKey;
     signature: Signature;
   };
@@ -207,9 +208,12 @@ exports.handler = async (event) => {
   const numDelegatesToField = UInt32.from(numDelegators);
   const payoutToField = UInt64.from(totalPoolToShare);
 
+  // Add the validator key so we can commit to it
+  const validatorToField = PublicKey.fromBase58(eventKey);
+
 
   // We have signed all the reward data already
-  signedData = signedData.concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields());
+  signedData = signedData.concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields().concat(validatorToField.toFields()));
   const signature = Signature.create(privateKey, signedData);
 
   const feePayout: FeePayout = {
@@ -221,6 +225,7 @@ exports.handler = async (event) => {
     rewards: outputArray,
     epoch: epochToField,
     feePayout: feePayout,
+    validatorKey: validatorToField,
     publicKey: signingKey,
     signature: signature
   };

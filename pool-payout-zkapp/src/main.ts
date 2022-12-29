@@ -14,7 +14,6 @@ import {
   Field,
   fetchAccount,
 } from 'snarkyjs';
-import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
 
 (async function main() {
 
@@ -34,8 +33,10 @@ import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qqgFa44QQR9vwJqbSHKYdMdJCvFeNBBSZxXGderofrm3QkrHFP3i");
+  const zkAppAddress = PublicKey.fromBase58("B62qivcDkFG43AFmwea343LPET4foHuQiYYu91fxjGuGf6WfPjGcQdx");
   const zkAppInstance = new PoolPayout(zkAppAddress);
+
+  const validatorPublicKey = PublicKey.fromBase58("B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg");
 
   console.log('Compiling smart contract...');
   try {
@@ -54,7 +55,7 @@ import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
   const feePayerNonce = process.argv[4];
 
   // Function URL
-  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=" + epochOracle + "&index=" + index;
+  let functionUrl = "https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=" + validatorPublicKey.toBase58() + "&epoch=" + epochOracle + "&index=" + index;
 
   console.log(functionUrl);
 
@@ -100,7 +101,7 @@ import { sendTransaction } from 'snarkyjs/dist/node/lib/mina.js';
       { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
       () => {
         // All accounts must be in the ledger to delegate
-        zkAppInstance.sendReward(rewardFields, feePayout, epoch, index, signature);
+        zkAppInstance.sendReward(rewardFields, feePayout, epoch, index, validatorPublicKey, signature);
       }
     );
 

@@ -88,7 +88,7 @@ describe('pool payout', () => {
     rewardFields.rewards.forEach((reward) => {
       signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
     })
-    signedData = signedData.concat(startingEpoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+    signedData = signedData.concat(startingEpoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields().concat(validatorPublicKey.toFields()));
 
     // TODO temp this is the same as in the lambda-payouts oracle but need to find a different way
     const signature = Signature.create(
@@ -98,7 +98,7 @@ describe('pool payout', () => {
 
     // Make the payouts
     let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-      pool.sendReward(rewardFields, feePayout, startingEpoch, startingIndex, signature);
+      pool.sendReward(rewardFields, feePayout, startingEpoch, startingIndex, validatorPublicKey, signature);
     });
     tx2.sign([deployerPrivateKey]);
     console.log("Proving transaction");
