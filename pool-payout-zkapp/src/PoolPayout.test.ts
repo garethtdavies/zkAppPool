@@ -178,7 +178,7 @@ describe('pool payout', () => {
       rewardFields.rewards.forEach((reward) => {
         signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
       })
-      signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+      signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields().concat(validatorPublicKey.toFields()));
 
       if(poolPayoutConfig.oraclePrivateKey) {
         signature = Signature.create(
@@ -196,7 +196,7 @@ describe('pool payout', () => {
 
         await expect(async () => {
           await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-            pool.sendReward(rewardFields, feePayout, invalidEpoch, Field(poolPayoutConfig.deployIndex), signature);
+            pool.sendReward(rewardFields, feePayout, invalidEpoch, Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
         }).rejects.toThrow("The epoch must match");
       });
@@ -205,7 +205,7 @@ describe('pool payout', () => {
         const invalidIndex = Field(999);
 
         let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-          pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), invalidIndex, signature);
+          pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), invalidIndex, validatorPublicKey, signature);
         });
         tx.sign([deployerPrivateKey]);
         await tx.prove();
@@ -224,7 +224,7 @@ describe('pool payout', () => {
 
         await expect(async () => {
           await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), invalidSignature);
+            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, invalidSignature);
           });
         }).rejects.toThrow("The signature does not match that of the oracle");
       });
@@ -272,7 +272,7 @@ describe('pool payout', () => {
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
-          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
     
     
           if(poolPayoutConfig.oraclePrivateKey) {
@@ -285,7 +285,7 @@ describe('pool payout', () => {
           }
 
           let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), signature);
+            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
           tx.sign([deployerPrivateKey]);
           await tx.prove();
@@ -368,7 +368,7 @@ describe('pool payout', () => {
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
-          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
     
     
           if(poolPayoutConfig.oraclePrivateKey) {
@@ -381,7 +381,7 @@ describe('pool payout', () => {
           }
 
           let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), signature);
+            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
           tx.sign([deployerPrivateKey]);
           await tx.prove();
@@ -460,7 +460,7 @@ describe('pool payout', () => {
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
-          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
     
     
           if(poolPayoutConfig.oraclePrivateKey) {
@@ -473,7 +473,7 @@ describe('pool payout', () => {
           }
 
           let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), signature);
+            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
           tx.sign([deployerPrivateKey]);
           await tx.prove();
@@ -499,7 +499,7 @@ describe('pool payout', () => {
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
-          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+          signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
     
     
           if(poolPayoutConfig.oraclePrivateKey) {
@@ -512,7 +512,7 @@ describe('pool payout', () => {
           }
 
           let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
-            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(b), signature);
+            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(b), validatorPublicKey, signature);
           });
           tx2.sign([deployerPrivateKey]);
           await tx2.prove();
