@@ -50,7 +50,7 @@ switch (process.env.ENV) {
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
 
-  const zkAppAddress = PublicKey.fromBase58("B62qivcDkFG43AFmwea343LPET4foHuQiYYu91fxjGuGf6WfPjGcQdx");
+  const zkAppAddress = PublicKey.fromBase58("B62qpgRgatAh4ENxjYZr2dA25P23oaykPQaPqZ93va2U2ZbkY4h25nR");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   const validatorPublicKey = PublicKey.fromBase58(poolPayoutConfig.validatorPublicKey);
