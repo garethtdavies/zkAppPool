@@ -15,7 +15,7 @@ import {
 } from 'snarkyjs';
 
 import Dotenv from "dotenv";
-import { TEST_CONFIG, BERKELEY_CONFIG, PoolPayoutConfig } from './utils/constants';
+import { TEST_CONFIG, BERKELEY_CONFIG, PoolPayoutConfig } from './utils/constants.js';
 
 Dotenv.config();
 let poolPayoutConfig: PoolPayoutConfig;

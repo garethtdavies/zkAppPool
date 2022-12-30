@@ -18,9 +18,9 @@ import Dotenv from "dotenv";
 
 Dotenv.config();
 let poolPayoutConfig: PoolPayoutConfig;
-switch(process.env.ENV) {
+switch (process.env.ENV) {
   case 'MAIN_NET':
-    throw("Main net not supported yet");
+    throw ("Main net not supported yet");
   case 'BERKELY':
     poolPayoutConfig = BERKELEY_CONFIG;
     break;
@@ -101,7 +101,7 @@ describe('pool payout', () => {
         await tx.send();
       }).rejects.toThrow("Transaction verification failed: Cannot update field 'appState' because permission for this field is 'Proof', but the required authorization was not provided or is invalid.");
     });
-  
+
     it('initializes correctly', async () => {
       const pool = new PoolPayout(zkappAddress);
       const appState = Mina.getAccount(pool.address).appState!;
@@ -114,7 +114,7 @@ describe('pool payout', () => {
       expect(appState[5].toString()).toBe(validatorPublicKey.x.toString());
       expect(appState[6].toString()).toBe(validatorPublicKey.isOdd.toField().toString());
     });
-  
+
     it('cannot trivially update state', async () => {
       const dummyFeePct = '100';
       const pool = new PoolPayout(zkappAddress);
@@ -123,7 +123,7 @@ describe('pool payout', () => {
       });
       tx.sign([deployerPrivateKey]);
       await tx.send();
-      
+
       const appState = Mina.getAccount(pool.address).appState!;
 
       expect(appState[2].toString()).toBe(String(poolPayoutConfig.validatorFee));
@@ -165,7 +165,7 @@ describe('pool payout', () => {
      */
     beforeEach(() => {
       rewardFields = { rewards: [] };
-      for(let i=0; i<poolPayoutConfig.rewardsArrayLength; i++) {
+      for (let i = 0; i < poolPayoutConfig.rewardsArrayLength; i++) {
         rewardFields.rewards.push(Reward.blank());
       }
 
@@ -180,13 +180,13 @@ describe('pool payout', () => {
       })
       signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields().concat(validatorPublicKey.toFields()));
 
-      if(poolPayoutConfig.oraclePrivateKey) {
+      if (poolPayoutConfig.oraclePrivateKey) {
         signature = Signature.create(
           PrivateKey.fromBase58(poolPayoutConfig.oraclePrivateKey),
           signedData
         )
       } else {
-        throw("Cannot test without the oracle private key");
+        throw ("Cannot test without the oracle private key");
       }
     });
 
@@ -229,10 +229,16 @@ describe('pool payout', () => {
         }).rejects.toThrow("The signature does not match that of the oracle");
       });
 
-      /**
-       * TODO: Validator key is not an input to the method, so I don't see how it can be "invalid"
-       */
-      // it('throws for invalid validator key', async () => {});
+      it('throws for invalid validator key', async () => {
+        const invalidValidatorPublicKey = PublicKey.fromBase58("B62qptmpH9PVe76ZEfS1NWVV27XjZJEJyr8mWZFjfohxppmS11DfKFG");
+
+        await expect(async () => {
+          await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+            pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), invalidValidatorPublicKey, signature);
+          });
+        }).rejects.toThrow("assert_equal: 1 != 0");
+
+      });
 
       /**
        * TODO: Implement this in the contract
@@ -252,8 +258,8 @@ describe('pool payout', () => {
 
           // number of payouts to process
           const n = poolPayoutConfig.rewardsArrayLength;
-          if(n > Object.keys(delegatorPrivateKeys).length) {
-            throw("Rewards array length is too long for testing.  Either configure a shorter length, or add additional keys to the test")
+          if (n > Object.keys(delegatorPrivateKeys).length) {
+            throw ("Rewards array length is too long for testing.  Either configure a shorter length, or add additional keys to the test")
           }
           const totalRewards = 1000;
 
@@ -262,26 +268,26 @@ describe('pool payout', () => {
             payout: UInt64.from(totalRewards).mul(1000), // TODO while testing use 1000th of the rewards to make it easy
           })
 
-          for(let i=0; i<n; i++) {
+          for (let i = 0; i < n; i++) {
             rewardFields.rewards[i].index = Field(i);
             rewardFields.rewards[i].publicKey = delegatorPrivateKeys[i].toPublicKey();
             rewardFields.rewards[i].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
           }
-    
+
           signedData = [];
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
           signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
-    
-    
-          if(poolPayoutConfig.oraclePrivateKey) {
+
+
+          if (poolPayoutConfig.oraclePrivateKey) {
             signature = Signature.create(
               PrivateKey.fromBase58(poolPayoutConfig.oraclePrivateKey),
               signedData
             )
           } else {
-            throw("Cannot test without the oracle private key");
+            throw ("Cannot test without the oracle private key");
           }
 
           let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
@@ -312,8 +318,8 @@ describe('pool payout', () => {
 
           Object.keys(startingDelegatorBalances).forEach((i) => {
             const accountBalance = Mina.getBalance(delegatorPrivateKeys[i].toPublicKey());
-            
-            if(Number(i) < n) {
+
+            if (Number(i) < n) {
               accountBalance.sub(startingDelegatorBalances[i]).toString();
               expect(accountBalance.sub(startingDelegatorBalances[i]).toString()).toBe(String(expectedPayout));
             } else {
@@ -348,8 +354,8 @@ describe('pool payout', () => {
           const n = poolPayoutConfig.rewardsArrayLength + 1;
           // batch size
           const b = poolPayoutConfig.rewardsArrayLength;
-          if(n > Object.keys(delegatorPrivateKeys).length) {
-            throw("Rewards array length is too long for testing.  Either configure a shorter length, or add additional keys to the test")
+          if (n > Object.keys(delegatorPrivateKeys).length) {
+            throw ("Rewards array length is too long for testing.  Either configure a shorter length, or add additional keys to the test")
           }
           const totalRewards = 1200;
 
@@ -358,26 +364,26 @@ describe('pool payout', () => {
             payout: UInt64.from(totalRewards).mul(1000), // TODO while testing use 1000th of the rewards to make it easy
           })
 
-          for(let i=0; i<b; i++) {
+          for (let i = 0; i < b; i++) {
             rewardFields.rewards[i].index = Field(i);
             rewardFields.rewards[i].publicKey = delegatorPrivateKeys[i].toPublicKey();
             rewardFields.rewards[i].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
           }
-    
+
           signedData = [];
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
           signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
-    
-    
-          if(poolPayoutConfig.oraclePrivateKey) {
+
+
+          if (poolPayoutConfig.oraclePrivateKey) {
             signature = Signature.create(
               PrivateKey.fromBase58(poolPayoutConfig.oraclePrivateKey),
               signedData
             )
           } else {
-            throw("Cannot test without the oracle private key");
+            throw ("Cannot test without the oracle private key");
           }
 
           let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
@@ -408,8 +414,8 @@ describe('pool payout', () => {
 
           Object.keys(startingDelegatorBalances).forEach((i) => {
             const accountBalance = Mina.getBalance(delegatorPrivateKeys[i].toPublicKey());
-            
-            if(Number(i) < b) {
+
+            if (Number(i) < b) {
               accountBalance.sub(startingDelegatorBalances[i]).toString();
               expect(accountBalance.sub(startingDelegatorBalances[i]).toString()).toBe(String(expectedPayout));
             } else {
@@ -440,8 +446,8 @@ describe('pool payout', () => {
           const n = poolPayoutConfig.rewardsArrayLength + 1;
           // batch size
           const b = poolPayoutConfig.rewardsArrayLength;
-          if(n > Object.keys(delegatorPrivateKeys).length) {
-            throw("Rewards array length is too long for testing.  Either configure a shorter length, or add additional keys to the test")
+          if (n > Object.keys(delegatorPrivateKeys).length) {
+            throw ("Rewards array length is too long for testing.  Either configure a shorter length, or add additional keys to the test")
           }
           const totalRewards = 1200;
 
@@ -450,26 +456,26 @@ describe('pool payout', () => {
             payout: UInt64.from(totalRewards).mul(1000), // TODO while testing use 1000th of the rewards to make it easy
           })
 
-          for(let i=0; i<b; i++) {
+          for (let i = 0; i < b; i++) {
             rewardFields.rewards[i].index = Field(i);
             rewardFields.rewards[i].publicKey = delegatorPrivateKeys[i].toPublicKey();
             rewardFields.rewards[i].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
           }
-    
+
           signedData = [];
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
           signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
-    
-    
-          if(poolPayoutConfig.oraclePrivateKey) {
+
+
+          if (poolPayoutConfig.oraclePrivateKey) {
             signature = Signature.create(
               PrivateKey.fromBase58(poolPayoutConfig.oraclePrivateKey),
               signedData
             )
           } else {
-            throw("Cannot test without the oracle private key");
+            throw ("Cannot test without the oracle private key");
           }
 
           let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
@@ -480,35 +486,35 @@ describe('pool payout', () => {
           await tx.send();
 
           // ----- Setup for the final transaction -------
-          if ((n-b) > poolPayoutConfig.rewardsArrayLength) {
-            throw("The test is setup such that the second batch of payouts is the final.  The current config breaks this assumption.")
+          if ((n - b) > poolPayoutConfig.rewardsArrayLength) {
+            throw ("The test is setup such that the second batch of payouts is the final.  The current config breaks this assumption.")
           }
           // Clear previous rewards array
           rewardFields = { rewards: [] };
-          for(let i=0; i<poolPayoutConfig.rewardsArrayLength; i++) {
+          for (let i = 0; i < poolPayoutConfig.rewardsArrayLength; i++) {
             rewardFields.rewards.push(Reward.blank());
           }
 
-          for(let i=b; i<n; i++) {
-            rewardFields.rewards[i-b].index = Field(i);
-            rewardFields.rewards[i-b].publicKey = delegatorPrivateKeys[i].toPublicKey();
-            rewardFields.rewards[i-b].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
+          for (let i = b; i < n; i++) {
+            rewardFields.rewards[i - b].index = Field(i);
+            rewardFields.rewards[i - b].publicKey = delegatorPrivateKeys[i].toPublicKey();
+            rewardFields.rewards[i - b].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
           }
-    
+
           signedData = [];
           rewardFields.rewards.forEach((reward) => {
             signedData = signedData.concat(reward.index.toFields()).concat(reward.publicKey.toFields()).concat(reward.rewards.toFields())
           })
           signedData = signedData.concat(Field(poolPayoutConfig.deployEpoch).toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields()).concat(validatorPublicKey.toFields());
-    
-    
-          if(poolPayoutConfig.oraclePrivateKey) {
+
+
+          if (poolPayoutConfig.oraclePrivateKey) {
             signature = Signature.create(
               PrivateKey.fromBase58(poolPayoutConfig.oraclePrivateKey),
               signedData
             )
           } else {
-            throw("Cannot test without the oracle private key");
+            throw ("Cannot test without the oracle private key");
           }
 
           let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
@@ -539,8 +545,8 @@ describe('pool payout', () => {
 
           Object.keys(startingDelegatorBalances).forEach((i) => {
             const accountBalance = Mina.getBalance(delegatorPrivateKeys[i].toPublicKey());
-            
-            if(Number(i) < n) {
+
+            if (Number(i) < n) {
               accountBalance.sub(startingDelegatorBalances[i]).toString();
               expect(accountBalance.sub(startingDelegatorBalances[i]).toString()).toBe(String(expectedPayout));
             } else {

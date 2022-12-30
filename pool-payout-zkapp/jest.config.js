@@ -16,4 +16,7 @@ export default {
   transformIgnorePatterns: [
     '<rootDir>/node_modules/(?!snarkyjs/node_modules/tslib)',
   ],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.+)\\.js$': '$1',
+  }
 };

@@ -15,6 +15,23 @@ import {
   fetchAccount,
 } from 'snarkyjs';
 
+import { BERKELEY_CONFIG, TEST_CONFIG, type PoolPayoutConfig } from './utils/constants.js';
+
+import Dotenv from "dotenv";
+
+Dotenv.config();
+let poolPayoutConfig: PoolPayoutConfig;
+switch (process.env.ENV) {
+  case 'MAIN_NET':
+    throw ("Main net not supported yet");
+  case 'BERKELY':
+    poolPayoutConfig = BERKELEY_CONFIG;
+    break;
+  case 'TEST':
+  default:
+    poolPayoutConfig = TEST_CONFIG;
+}
+
 (async function main() {
 
   await isReady;
@@ -36,7 +53,7 @@ import {
   const zkAppAddress = PublicKey.fromBase58("B62qivcDkFG43AFmwea343LPET4foHuQiYYu91fxjGuGf6WfPjGcQdx");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
-  const validatorPublicKey = PublicKey.fromBase58("B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg");
+  const validatorPublicKey = PublicKey.fromBase58(poolPayoutConfig.validatorPublicKey);
 
   console.log('Compiling smart contract...');
   try {
