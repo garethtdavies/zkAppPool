@@ -14,20 +14,36 @@ import {
   Bool,
 } from 'snarkyjs';
 
+import Dotenv from "dotenv";
+import { TEST_CONFIG, BERKELEY_CONFIG, PoolPayoutConfig } from './utils/constants.js';
+
+Dotenv.config();
+let poolPayoutConfig: PoolPayoutConfig;
+switch(process.env.ENV) {
+  case 'MAIN_NET':
+    throw("Main net not supported yet");
+  case 'BERKELEY':
+    poolPayoutConfig = BERKELEY_CONFIG;
+    break;
+  case 'TEST':
+  default:
+    poolPayoutConfig = TEST_CONFIG;
+}
+
 // The public key of our trusted data provider - this cannot be changed once the contract is deployed.
-const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
+const ORACLE_PUBLIC_KEY = poolPayoutConfig.oraclePublicKey;
 
 // The public key of the block producer  - this cannot be changed once the contract is deployed.
-const VALIDATOR_PUBLIC_KEY = 'B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg';
+const VALIDATOR_PUBLIC_KEY = poolPayoutConfig.validatorPublicKey;
 
 // The fee charged by the block producer
-const VALIDATOR_FEE = 5;
+const VALIDATOR_FEE = poolPayoutConfig.validatorFee;
 
 // The initial epoch
-const INITIAL_EPOCH = 39;
+const INITIAL_EPOCH = poolPayoutConfig.deployEpoch;
 
 // The initial index
-const INITIAL_INDEX = 0;
+const INITIAL_INDEX = poolPayoutConfig.deployIndex;
 
 export class Reward extends Struct({
   index: Field,
@@ -52,7 +68,7 @@ export class FeePayout extends Struct({
 }) { }
 
 export class Rewards2 extends Struct({
-  rewards: Circuit.array(Reward, 8),
+  rewards: Circuit.array(Reward, poolPayoutConfig.rewardsArrayLength),
 }) { }
 
 export class PoolPayout extends SmartContract {
@@ -169,15 +185,6 @@ export class PoolPayout extends SmartContract {
       )
       payout.assertLte(reward.rewards);
 
-      Circuit.asProver(() => {
-        Circuit.log(
-          "Payout: ", reward.publicKey, payout.toString()
-        )
-        Circuit.log(
-          "Percent: ", payoutPercentage.toString()
-        )
-      })
-
       // If we made it this far we can create the account updates for the transaction. It can still fail when we assert the signature.
       this.send({
         to: reward.publicKey,
@@ -208,12 +215,6 @@ export class PoolPayout extends SmartContract {
       (() => [feePayout.payout.mul(feePercentage.toUInt64()).div(100).div(1000), Field(0), epoch.add(1)])(), //TODO temp make this much smaller for managable payouts
       (() => [UInt64.from(0), transactionIndex, epoch])()
     )
-
-    Circuit.asProver(() => {
-      Circuit.log(
-        "Validator Cut: ", validatorCut.toString()
-      )
-    })
 
     // Update the on-chain state
     this.currentEpoch.set(e);
