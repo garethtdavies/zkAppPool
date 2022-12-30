@@ -22,7 +22,7 @@ let poolPayoutConfig: PoolPayoutConfig;
 switch(process.env.ENV) {
   case 'MAIN_NET':
     throw("Main net not supported yet");
-  case 'BERKELY':
+  case 'BERKELEY':
     poolPayoutConfig = BERKELEY_CONFIG;
     break;
   case 'TEST':
