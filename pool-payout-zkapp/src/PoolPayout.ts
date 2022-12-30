@@ -135,7 +135,7 @@ export class PoolPayout extends SmartContract {
   // It validates a signature from the oracle.
   // Once complete it updates the state to the latest epoch and epoch.
   @method
-  sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, index: Field, signature: Signature) {
+  sendReward(accounts: Rewards2, feePayout: FeePayout, epoch: Field, index: Field, validatorKey: PublicKey, signature: Signature) {
 
     // Get the current epoch stored on-chain
     let currentEpoch = this.currentEpoch.get();
@@ -157,7 +157,8 @@ export class PoolPayout extends SmartContract {
 
     // Get the block producer stored on-chain.
     let validatorPublicKey = this.validatorPublicKey.get();
-    this.validatorPublicKey.assertEquals(validatorPublicKey);
+    this.validatorPublicKey.assertEquals(validatorKey);
+    validatorKey.assertEquals(validatorPublicKey);
 
     let signedData: Field[] = [];
 
@@ -201,7 +202,7 @@ export class PoolPayout extends SmartContract {
 
     }
 
-    signedData = signedData.concat(epoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields());
+    signedData = signedData.concat(epoch.toFields()).concat(feePayout.numDelegates.toFields()).concat(feePayout.payout.toFields().concat(validatorPublicKey.toFields()));
 
     const validSignature = signature.verify(oraclePublicKey, signedData);
 
