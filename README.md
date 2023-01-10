@@ -1,5 +1,11 @@
-# zkAppPool
-A zkApp based staking pool for MINA (WIP) developed for the zkApp builders program.
+# MINA zkApp Staking Pool
+A zkApp based staking pool for MINA developed for the zkApp builders program.
+
+* A detailed overview of the project is available [here](https://hackmd.io/@garethtdavies/BJH3xMpFs). 
+* A presentation of the project is available [here](https://www.youtube.com/watch?v=maoA_5MgOA8&list=PLKIvwYrcKk8DdDgx5jBpEDoRyKWVP6EKM&index=12&t=1s).
+
+The oracle code is contained within the **lambda-payouts** folder.
+The smart contract code is contained within the **pool-payout-zkapp** folder. 
 
 The aim of the project is to research and improve the mechanisms for MINA staking pool payouts. The current major issues are:
 
