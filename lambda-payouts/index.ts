@@ -1,14 +1,10 @@
-// This will just return precalculated payouts for an epoch payout
-// TODO this currently doesn't have a fee for the validator
-// https://kodem6bg3gatbplrmoiy2sxnty0wfrhp.lambda-url.us-west-2.on.aws/?publicKey=B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg&epoch=39
-
 import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64, Bool } from "snarkyjs";
 import { request, gql } from 'graphql-request';
 
 // This query gets the blocks won in an epoch for a producer
 const query = gql`
 query($creator: String!, $epoch: Int){
-  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 1000) {
+  blocks(query: {creator: $creator, protocolState: {consensusState: {epoch: $epoch}}, canonical: true}, sortBy: DATETIME_DESC, limit: 10000) {
     blockHeight
     canonical
     creator
@@ -64,8 +60,6 @@ query($delegate: String!, $epoch: Int!){
 
 exports.handler = async (event) => {
 
-  console.log("Let's go...");
-
   await isReady;
 
   // Define the type that our function (and API) will return
@@ -89,17 +83,19 @@ exports.handler = async (event) => {
     "payout": UInt64;
   }
 
-  // get the event from Lambda URI and allow for local development
+  // Get the event from Lambda URI
   const eventKey: string = event.queryStringParameters.publicKey;
   const epochEvent: number = event.queryStringParameters.epoch;
   let indexEvent: number = event.queryStringParameters.index || 0;
 
+  // Local debugging
   //const eventKey = "B62qjhiEXP45KEk8Fch4FnYJQ7UMMfiR3hq9ZeMUZ8ia3MbfEteSYDg";
   //const epochEvent = "39";
   //let indexEvent = 58;
   //const limit = 9;
 
   // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
+  // Currently useful for testing
   const privateKey = PrivateKey.fromBase58(
     "EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53"
   );
@@ -158,7 +154,7 @@ exports.handler = async (event) => {
   // Trim the staking data to match our index and limit
   let trimmedStakingData = stakingData.slice(indexEvent, Number(indexEvent) + 8);
 
-  // Anyone who is in this list will be getting a reward, asssuming above 0
+  // Anyone who is in this list will be getting a reward
   trimmedStakingData.forEach((staker) => {
 
     let delegatingKey = staker.public_key;
@@ -167,9 +163,6 @@ exports.handler = async (event) => {
 
     // Determine individual staking rewards based on percentage of pool
     let rewards = Math.trunc((delegatingBalance / poolBalance) * totalPoolToShare);
-
-    // For all stakers feePayout is false
-    let feePayout = Bool(false);
 
     // Format 
     const indexToField = UInt32.from(indexEvent);
@@ -190,6 +183,7 @@ exports.handler = async (event) => {
   });
 
   // Handle the case where we have less than 8
+  // We have to pass a fixed sized array into the zkApp
   for (let i = trimmedStakingData.length; i < 8; i++) {
 
     signedData = signedData.concat(UInt32.from(0).toFields()).concat(PublicKey.empty().toFields()).concat(UInt64.from(0).toFields());
@@ -210,7 +204,6 @@ exports.handler = async (event) => {
 
   // Add the validator key so we can commit to it
   const validatorToField = PublicKey.fromBase58(eventKey);
-
 
   // We have signed all the reward data already
   signedData = signedData.concat(epochToField.toFields()).concat(numDelegatesToField.toFields()).concat(payoutToField.toFields().concat(validatorToField.toFields()));
