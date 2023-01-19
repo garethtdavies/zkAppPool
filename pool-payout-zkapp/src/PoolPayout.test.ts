@@ -99,7 +99,7 @@ describe('pool payout', () => {
       tx.sign([deployerPrivateKey]);
       await expect(async () => {
         await tx.send();
-      }).rejects.toThrow("Transaction verification failed: Cannot update field 'appState' because permission for this field is 'Proof', but the required authorization was not provided or is invalid.");
+      }).rejects.toThrow("Transaction verification failed: Cannot update field 'verificationKey' because permission for this field is 'Proof', but the required authorization was not provided or is invalid.");
     });
 
     it('initializes correctly', async () => {

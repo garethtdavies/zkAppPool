@@ -49,8 +49,9 @@ switch (process.env.ENV) {
   let feePayerPrivateKey = PrivateKey.fromBase58(
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
+  let feePayerPublicKey = feePayerPrivateKey.toPublicKey();
 
-  const zkAppAddress = PublicKey.fromBase58("B62qpgRgatAh4ENxjYZr2dA25P23oaykPQaPqZ93va2U2ZbkY4h25nR");
+  const zkAppAddress = PublicKey.fromBase58("B62qopmrg5dYbakJv374y3ooUYGLd7J7KvPubrz6SeVgkxWTjTXtdsp");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   const validatorPublicKey = PublicKey.fromBase58(poolPayoutConfig.validatorPublicKey);
@@ -115,7 +116,7 @@ switch (process.env.ENV) {
 
   try {
     let transaction = await Mina.transaction(
-      { feePayerKey: feePayerPrivateKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
+      { sender: feePayerPublicKey, fee: transactionFee, memo: `zkApp payout epoch ${epochOracle}`, nonce: Number(feePayerNonce) },
       () => {
         // All accounts must be in the ledger to delegate
         zkAppInstance.sendReward(rewardFields, feePayout, epoch, index, validatorPublicKey, signature);
@@ -124,6 +125,7 @@ switch (process.env.ENV) {
 
     console.log("Proving transaction");
     await transaction.prove();
+    transaction.sign([feePayerPrivateKey]);
 
     console.log("Sending transaction");
     console.log(transaction.toPretty());
