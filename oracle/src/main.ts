@@ -20,7 +20,7 @@ import {
   console.log('SnarkyJS loaded');
 
   // Connect to Berkeley
-  const Berkeley = Mina.BerkeleyQANet(
+  const Berkeley = Mina.Network(
     'https://proxy.berkeley.minaexplorer.com/graphql'
   );
   Mina.setActiveInstance(Berkeley);
@@ -32,6 +32,7 @@ import {
   let feePayerPrivateKey = PrivateKey.fromBase58(
     'EKDvE7umHorQrXFq1AAwV4zEDLGtZuqpn1mhsgxvYRneUpKxRUF8'
   );
+  let feePayerPublicKey = feePayerPrivateKey.toPublicKey();
   // ----------------------------------------------------
 
   const zkAppAddress = PublicKey.fromBase58("B62qoDSzH2npmB1jC434dYdmw2gbHvhez2rfmzrj9a58RHe1DQLTgps");
@@ -75,7 +76,7 @@ import {
 
   try {
     let transaction = await Mina.transaction(
-      { feePayerKey: feePayerPrivateKey, fee: transactionFee },
+      { sender: feePayerPublicKey, fee: transactionFee },
       () => {
         //zkAppInstance.init();
         zkAppInstance.verify(
@@ -93,6 +94,7 @@ import {
     );
 
     await transaction.prove();
+    transaction.sign([feePayerPrivateKey]);
     await transaction.send();
 
   } catch (error: any) {
