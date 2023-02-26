@@ -19,9 +19,9 @@ import { TEST_CONFIG, BERKELEY_CONFIG, PoolPayoutConfig } from './utils/constant
 
 Dotenv.config();
 let poolPayoutConfig: PoolPayoutConfig;
-switch(process.env.ENV) {
+switch (process.env.ENV) {
   case 'MAIN_NET':
-    throw("Main net not supported yet");
+    throw ("Main net not supported yet");
   case 'BERKELEY':
     poolPayoutConfig = BERKELEY_CONFIG;
     break;
@@ -92,10 +92,10 @@ export class PoolPayout extends SmartContract {
   init() {
     super.init()
 
-    this.setPermissions({
+    this.account.permissions.set({
       ...Permissions.default(),
-      editSequenceState: Permissions.proof(), // No need for this
-      editState: Permissions.proof(), //TODO this should be proof only
+      editSequenceState: Permissions.proof(),
+      editState: Permissions.proof(),
       incrementNonce: Permissions.proof(),
       receive: Permissions.none(),
       send: Permissions.proof(), // Can only send via a proof
@@ -183,7 +183,7 @@ export class PoolPayout extends SmartContract {
         (() => reward.rewards.mul(payoutPercentage).div(100).div(1000))(), // TODO Temp make this smaller as easier to pay
         (() => UInt64.zero)()
       )
-      payout.assertLte(reward.rewards);
+      payout.assertLessThanOrEqual(reward.rewards);
 
       // If we made it this far we can create the account updates for the transaction. It can still fail when we assert the signature.
       this.send({
@@ -211,7 +211,7 @@ export class PoolPayout extends SmartContract {
 
     // If we are at the number of delegators we can send the fees to the onchain validated public key
     const [validatorCut, i, e] = Circuit.if(
-      transactionIndex.gte(feePayout.numDelegates),
+      transactionIndex.greaterThanOrEqual(feePayout.numDelegates),
       (() => [feePayout.payout.mul(feePercentage.toUInt64()).div(100).div(1000), Field(0), epoch.add(1)])(), //TODO temp make this much smaller for managable payouts
       (() => [UInt64.from(0), transactionIndex, epoch])()
     )
