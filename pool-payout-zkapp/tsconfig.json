@@ -20,7 +20,8 @@
     "sourceMap": false,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "types": ["jest"]
   },
   "include": ["./src"],
   "exclude": ["./src/**/*.test.ts"]

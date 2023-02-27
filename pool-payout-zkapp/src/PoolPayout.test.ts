@@ -104,7 +104,7 @@ describe('pool payout', () => {
 
     it('initializes correctly', async () => {
       const pool = new PoolPayout(zkappAddress);
-      const appState = Mina.getAccount(pool.address).appState!;
+      const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
       expect(appState[0].toString()).toBe(String(poolPayoutConfig.deployEpoch));
       expect(appState[1].toString()).toBe(String(poolPayoutConfig.deployIndex));
@@ -124,7 +124,7 @@ describe('pool payout', () => {
       tx.sign([deployerPrivateKey]);
       await tx.send();
 
-      const appState = Mina.getAccount(pool.address).appState!;
+      const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
       expect(appState[2].toString()).toBe(String(poolPayoutConfig.validatorFee));
       expect(appState[2].toString()).not.toBe(dummyFeePct);
@@ -236,7 +236,7 @@ describe('pool payout', () => {
           await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), invalidValidatorPublicKey, signature);
           });
-        }).rejects.toThrow("assert_equal: 1 != 0");
+        }).rejects.toThrow("assert_equal: 0x0000000000000000000000000000000000000000000000000000000000000001 != 0x0000000000000000000000000000000000000000000000000000000000000000");
 
       });
 
@@ -299,13 +299,13 @@ describe('pool payout', () => {
         });
 
         it('Sets index to 0', async () => {
-          const appState = Mina.getAccount(pool.address).appState!;
+          const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
           expect(appState[1].toString()).toBe('0');
         });
 
         it('updates the state epoch', async () => {
-          const appState = Mina.getAccount(pool.address).appState!;
+          const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
           expect(appState[0].toString()).toBe(String(poolPayoutConfig.deployEpoch + 1));
         });
@@ -394,13 +394,13 @@ describe('pool payout', () => {
           await tx.send();
         });
         it('updates the state index', async () => {
-          const appState = Mina.getAccount(pool.address).appState!;
+          const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
           expect(appState[1].toString()).toBe(String(poolPayoutConfig.rewardsArrayLength));
         });
 
         it('does not update the state epoch', async () => {
-          const appState = Mina.getAccount(pool.address).appState!;
+          const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
           expect(appState[0].toString()).toBe(String(poolPayoutConfig.deployEpoch));
         });
@@ -526,13 +526,13 @@ describe('pool payout', () => {
         });
 
         it('Sets index to 0', async () => {
-          const appState = Mina.getAccount(pool.address).appState!;
+          const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
           expect(appState[1].toString()).toBe('0');
         });
 
         it('updates the state epoch', async () => {
-          const appState = Mina.getAccount(pool.address).appState!;
+          const appState = Mina.getAccount(pool.address).zkapp?.appState!;
 
           expect(appState[0].toString()).toBe(String(poolPayoutConfig.deployEpoch + 1));
         });
