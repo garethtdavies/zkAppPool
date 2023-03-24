@@ -35,12 +35,10 @@ await PoolPayout.compile();
 describe('pool payout', () => {
   let zkappPrivateKey: PrivateKey;
   let zkappAddress: PublicKey;
-
   let deployerPrivateKey: PrivateKey;
   let delegatorPrivateKeys: Record<number, PrivateKey>;
   let validatorPublicKey: PublicKey;
   let oraclePublicKey: PublicKey;
-
   let pool: PoolPayout;
 
   /**
@@ -67,15 +65,14 @@ describe('pool payout', () => {
     pool = new PoolPayout(zkappAddress);
 
     // setup
-    const tx = await Mina.transaction(deployerPrivateKey, () => {
-      AccountUpdate.fundNewAccount(deployerPrivateKey);
+    const tx = await Mina.transaction(deployerPrivateKey.toPublicKey(), () => {
+      AccountUpdate.fundNewAccount(deployerPrivateKey.toPublicKey());
       pool.deploy({ zkappKey: zkappPrivateKey });
       const createValidatorAccount = AccountUpdate.create(deployerPrivateKey.toPublicKey());
       createValidatorAccount.send({ to: validatorPublicKey, amount: 1 });
       createValidatorAccount.requireSignature();
     });
-    tx.sign([deployerPrivateKey]);
-    await tx.send();
+    await tx.sign([deployerPrivateKey]).send();
   };
 
   afterAll(async () => {
@@ -93,7 +90,7 @@ describe('pool payout', () => {
 
     it('cannot redeploy', async () => {
       const pool = new PoolPayout(zkappAddress);
-      const tx = await Mina.transaction(deployerPrivateKey, () => {
+      const tx = await Mina.transaction(deployerPrivateKey.toPublicKey(), () => {
         pool.deploy({ zkappKey: zkappPrivateKey });
       });
       tx.sign([deployerPrivateKey]);
@@ -118,7 +115,7 @@ describe('pool payout', () => {
     it('cannot trivially update state', async () => {
       const dummyFeePct = '100';
       const pool = new PoolPayout(zkappAddress);
-      const tx = await Mina.transaction(deployerPrivateKey, () => {
+      const tx = await Mina.transaction(deployerPrivateKey.toPublicKey(), () => {
         pool.feePercentage.set(UInt32.from(dummyFeePct));
       });
       tx.sign([deployerPrivateKey]);
@@ -195,7 +192,7 @@ describe('pool payout', () => {
         const invalidEpoch = Field(0);
 
         await expect(async () => {
-          await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, invalidEpoch, Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
         }).rejects.toThrow("The epoch must match");
@@ -204,7 +201,7 @@ describe('pool payout', () => {
       it('throws for invalid index', async () => {
         const invalidIndex = Field(999);
 
-        let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+        let tx = await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
           pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), invalidIndex, validatorPublicKey, signature);
         });
         tx.sign([deployerPrivateKey]);
@@ -223,7 +220,7 @@ describe('pool payout', () => {
         );
 
         await expect(async () => {
-          await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, invalidSignature);
           });
         }).rejects.toThrow("The signature does not match that of the oracle");
@@ -233,7 +230,7 @@ describe('pool payout', () => {
         const invalidValidatorPublicKey = PublicKey.fromBase58("B62qptmpH9PVe76ZEfS1NWVV27XjZJEJyr8mWZFjfohxppmS11DfKFG");
 
         await expect(async () => {
-          await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), invalidValidatorPublicKey, signature);
           });
         }).rejects.toThrow("assert_equal: 0x0000000000000000000000000000000000000000000000000000000000000001 != 0x0000000000000000000000000000000000000000000000000000000000000000");
@@ -290,7 +287,7 @@ describe('pool payout', () => {
             throw ("Cannot test without the oracle private key");
           }
 
-          let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          let tx = await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
           tx.sign([deployerPrivateKey]);
@@ -331,8 +328,7 @@ describe('pool payout', () => {
         it('pays the validator', async () => {
           const n = poolPayoutConfig.rewardsArrayLength;
           const totalRewards = 1000;
-          const validatorFee = poolPayoutConfig.validatorFee / 100;
-          const expectedPayout = totalRewards * validatorFee;
+          const expectedPayout = totalRewards * poolPayoutConfig.validatorFee / 100;
 
           const accountBalance = Mina.getBalance(validatorPublicKey);
           expect(accountBalance.sub(startingValidatorBalance).toString()).toBe(String(expectedPayout));
@@ -367,7 +363,7 @@ describe('pool payout', () => {
           for (let i = 0; i < b; i++) {
             rewardFields.rewards[i].index = Field(i);
             rewardFields.rewards[i].publicKey = delegatorPrivateKeys[i].toPublicKey();
-            rewardFields.rewards[i].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
+            rewardFields.rewards[i].rewards = UInt64.from(totalRewards).mul(1000).div(n); // TODO while testing use 1000th of the rewards to make it easier
           }
 
           signedData = [];
@@ -386,7 +382,7 @@ describe('pool payout', () => {
             throw ("Cannot test without the oracle private key");
           }
 
-          let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          let tx = await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
           tx.sign([deployerPrivateKey]);
@@ -410,7 +406,7 @@ describe('pool payout', () => {
           const b = poolPayoutConfig.rewardsArrayLength;
           const totalRewards = 1200;
           const validatorFee = poolPayoutConfig.validatorFee / 100;
-          const expectedPayout = (totalRewards / n) * (1 - validatorFee);
+          const expectedPayout = totalRewards * (1 - validatorFee) / n;
 
           Object.keys(startingDelegatorBalances).forEach((i) => {
             const accountBalance = Mina.getBalance(delegatorPrivateKeys[i].toPublicKey());
@@ -459,7 +455,7 @@ describe('pool payout', () => {
           for (let i = 0; i < b; i++) {
             rewardFields.rewards[i].index = Field(i);
             rewardFields.rewards[i].publicKey = delegatorPrivateKeys[i].toPublicKey();
-            rewardFields.rewards[i].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
+            rewardFields.rewards[i].rewards = UInt64.from(totalRewards).mul(1000).div(n); // TODO while testing use 1000th of the rewards to make it easier
           }
 
           signedData = [];
@@ -478,7 +474,7 @@ describe('pool payout', () => {
             throw ("Cannot test without the oracle private key");
           }
 
-          let tx = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          let tx = await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(poolPayoutConfig.deployIndex), validatorPublicKey, signature);
           });
           tx.sign([deployerPrivateKey]);
@@ -498,7 +494,7 @@ describe('pool payout', () => {
           for (let i = b; i < n; i++) {
             rewardFields.rewards[i - b].index = Field(i);
             rewardFields.rewards[i - b].publicKey = delegatorPrivateKeys[i].toPublicKey();
-            rewardFields.rewards[i - b].rewards = UInt64.from(totalRewards / n).mul(1000); // TODO while testing use 1000th of the rewards to make it easier
+            rewardFields.rewards[i - b].rewards = UInt64.from(totalRewards).mul(1000).div(n); // TODO while testing use 1000th of the rewards to make it easier
           }
 
           signedData = [];
@@ -517,7 +513,7 @@ describe('pool payout', () => {
             throw ("Cannot test without the oracle private key");
           }
 
-          let tx2 = await Mina.transaction({ feePayerKey: deployerPrivateKey, fee: 1_000_000_000 }, () => {
+          let tx2 = await Mina.transaction({ sender: deployerPrivateKey.toPublicKey(), fee: 1_000_000_000 }, () => {
             pool.sendReward(rewardFields, feePayout, Field(poolPayoutConfig.deployEpoch), Field(b), validatorPublicKey, signature);
           });
           tx2.sign([deployerPrivateKey]);
@@ -541,7 +537,7 @@ describe('pool payout', () => {
           const n = poolPayoutConfig.rewardsArrayLength + 1;
           const totalRewards = 1200;
           const validatorFee = poolPayoutConfig.validatorFee / 100;
-          const expectedPayout = (totalRewards / n) * (1 - validatorFee);
+          const expectedPayout = totalRewards * (1 - validatorFee) / n;
 
           Object.keys(startingDelegatorBalances).forEach((i) => {
             const accountBalance = Mina.getBalance(delegatorPrivateKeys[i].toPublicKey());
@@ -556,7 +552,6 @@ describe('pool payout', () => {
         });
 
         it('pays the validator', async () => {
-          const n = poolPayoutConfig.rewardsArrayLength;
           const totalRewards = 1200;
           const validatorFee = poolPayoutConfig.validatorFee / 100;
           const expectedPayout = totalRewards * validatorFee;

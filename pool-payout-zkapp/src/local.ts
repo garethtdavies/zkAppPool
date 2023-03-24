@@ -15,7 +15,6 @@ import {
   state,
   State,
   PrivateKey,
-  Circuit,
 } from 'snarkyjs';
 
 const ORACLE_PUBLIC_KEY =
@@ -36,7 +35,7 @@ export class PoolPayout extends SmartContract {
 
   deploy(args: DeployArgs) {
     super.deploy(args);
-    this.setPermissions({
+    this.account.permissions.set({
       ...Permissions.default(),
       editState: Permissions.proofOrSignature(),
       incrementNonce: Permissions.proofOrSignature(),

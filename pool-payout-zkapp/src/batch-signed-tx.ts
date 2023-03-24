@@ -14,7 +14,7 @@ import * as fs from 'fs';
 await isReady;
 
 // Use MinaExplorer GraphQL endpoint
-let Berkeley = Mina.BerkeleyQANet(
+let Berkeley = Mina.Network(
   'https://proxy.berkeley.minaexplorer.com/graphql'
 );
 Mina.setActiveInstance(Berkeley);

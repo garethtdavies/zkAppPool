@@ -92,9 +92,8 @@ describe('DelegationOracle', () => {
           amountSent,
           signature ?? fail('something is wrong with the signature')
         );
-        zkAppInstance.requireSignature();
       });
-      await txn.sign([deployerAccount]).send();
+      await txn.sign([deployerAccount, zkAppPrivateKey]).send();
 
       // Test against these emitted after got it working
       const events = await zkAppInstance.fetchEvents();
@@ -131,13 +130,12 @@ describe('DelegationOracle', () => {
           amountSent,
           signature ?? fail('something is wrong with the signature')
         );
-        zkAppInstance.requireSignature();
       });
-      await txn.sign([deployerAccount]).send();
+      await txn.sign([deployerAccount, zkAppPrivateKey]).send();
 
       // Test events after we have this working
       const events = await zkAppInstance.fetchEvents();
-      console.log("events ", events);
+      // console.log("events ", events);
     });
   });
 
@@ -177,9 +175,9 @@ describe('DelegationOracle', () => {
         );
       });
       await txn.prove();
-      await txn.sign([deployerAccount]).send();
+      await txn.sign([deployerAccount, zkAppPrivateKey]).send();
 
-      const events = await zkAppInstance.fetchEvents();
+      // const events = await zkAppInstance.fetchEvents();
     });
   });
 });
