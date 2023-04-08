@@ -12,22 +12,23 @@ import {
   Signature,
   UInt64,
   UInt32,
+  Circuit,
 } from 'snarkyjs';
 
 // The public key of our trusted data provider
-const ORACLE_PUBLIC_KEY =
-  'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
+const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
 
 export class DelegationOracle extends SmartContract {
   @state(PublicKey) oraclePublicKey = State<PublicKey>();
 
-  // TODO improve the permissions
-  deploy(args: DeployArgs) {
-    super.deploy(args);
-    this.setPermissions({
+  init() {
+    super.init();
+    this.account.permissions.set({
       ...Permissions.default(),
       editState: Permissions.proofOrSignature(),
     });
+    //Circuit.log('key', ORACLE_PUBLIC_KEY);
+    //Circuit.log('key', PublicKey.fromBase58(ORACLE_PUBLIC_KEY).toBase58());
     this.oraclePublicKey.set(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
   }
 
@@ -56,7 +57,7 @@ export class DelegationOracle extends SmartContract {
     validSignature.assertTrue();
 
     // Check that they have paid enough
-    amountSent.assertGte(amountOwed);
+    amountSent.assertGreaterThanOrEqual(amountOwed);
 
     // Emit an event containing the verified users id
     this.emitEvent('verified', publicKey);
