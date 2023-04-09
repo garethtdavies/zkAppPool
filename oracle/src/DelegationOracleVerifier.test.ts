@@ -16,8 +16,7 @@ import {jest} from '@jest/globals'
 jest.setTimeout(30000);
 
 // The public key of our trusted data provider
-const ORACLE_PUBLIC_KEY =
-  'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
+const ORACLE_PUBLIC_KEY = 'B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1';
 
 function createLocalBlockchain() {
   const Local = Mina.LocalBlockchain();
@@ -36,7 +35,7 @@ async function localDeploy(
     zkAppInstance.init();
     zkAppInstance.sign(zkAppPrivatekey);
   });
-  await txn.send().wait();
+  await txn.send();
 }
 
 describe('DelegationOracle', () => {
@@ -57,8 +56,10 @@ describe('DelegationOracle', () => {
 
   it('generates and deploys the `DelegationOracle` smart contract', async () => {
     const zkAppInstance = new DelegationOracle(zkAppAddress);
+    console.log(zkAppAddress.toBase58());
     await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
     const oraclePublicKey = zkAppInstance.oraclePublicKey.get();
+    console.log(oraclePublicKey.toBase58());
     expect(oraclePublicKey).toEqual(PublicKey.fromBase58(ORACLE_PUBLIC_KEY));
   });
 
@@ -72,14 +73,14 @@ describe('DelegationOracle', () => {
       );
       const data = await response.json();
 
-      const epoch = UInt32.fromNumber(data.data.epoch);
+      const epoch = UInt32.from(data.data.epoch);
       const publicKey = PublicKey.fromBase58(data.data.publicKey);
       const producerKey = PublicKey.fromBase58(data.data.producerKey);
-      const blocksWon = UInt32.fromNumber(data.data.blocksWon);
-      const delegatedBalance = UInt64.fromNumber(data.data.delegatedBalance);
-      const totalDelegatedBalance = UInt64.fromNumber(data.data.totalDelegatedBalance);
-      const amountOwed = UInt64.fromNumber(data.data.amountOwed);
-      const amountSent = UInt64.fromNumber(data.data.amountSent);
+      const blocksWon = UInt32.from(data.data.blocksWon);
+      const delegatedBalance = UInt64.from(data.data.delegatedBalance);
+      const totalDelegatedBalance = UInt64.from(data.data.totalDelegatedBalance);
+      const amountOwed = UInt64.from(data.data.amountOwed);
+      const amountSent = UInt64.from(data.data.amountSent);
       const signature = Signature.fromJSON(data.signature);
 
       const txn = await Mina.transaction(deployerAccount, () => {
@@ -96,7 +97,7 @@ describe('DelegationOracle', () => {
         );
         zkAppInstance.sign(zkAppPrivateKey);
       });
-      await txn.send().wait();
+      await txn.send();
 
       // Test against these emitted after got it working
       const events = await zkAppInstance.fetchEvents();
@@ -104,21 +105,21 @@ describe('DelegationOracle', () => {
   });
 
   describe('hardcoded values', () => {
-    it('emits event if everythiong is valid', async () => {
+    it('emits event if everything is valid', async () => {
       const zkAppInstance = new DelegationOracle(zkAppAddress);
       await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
 
-      const epoch = UInt32.fromNumber(38);
+      const epoch = UInt32.from(38);
       const publicKey = PublicKey.fromBase58("B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz");
       const producerKey = PublicKey.fromBase58("B62qpLST3UC1rpVT6SHfB7wqW2iQgiopFAGfrcovPgLjgfpDUN2LLeg");
-      const blocksWon = UInt32.fromNumber(9);
-      const delegatedBalance = UInt64.fromNumber(951659889077537);
-      const totalDelegatedBalance = UInt64.fromNumber(951659889077537);
-      const amountOwed = UInt64.fromNumber(6156000000000);
-      const amountSent = UInt64.fromNumber(17784000000000);
+      const blocksWon = UInt32.from(9);
+      const delegatedBalance = UInt64.from(951659889077537);
+      const totalDelegatedBalance = UInt64.from(951659889077537);
+      const amountOwed = UInt64.from(6156000000000);
+      const amountSent = UInt64.from(59120487400000);
       const signature = Signature.fromJSON({
-        r: '4585336111649222276312617544050671811572206187060030835626544623230564871660',
-        s: '23705120429500629446892768253494096656563972492453883998435780307943658192079'
+        r: '6748126514374051560245348427165654474450396230973498284112136428919612040590',
+        s: '8727899935074061901427059917125618805718425172046946859643762715642100796594'
       });
 
       const txn = await Mina.transaction(deployerAccount, () => {
@@ -135,7 +136,7 @@ describe('DelegationOracle', () => {
         );
         zkAppInstance.sign(zkAppPrivateKey);
       });
-      await txn.send().wait();
+      await txn.send();
 
       // Test events after we have this working
       const events = await zkAppInstance.fetchEvents();
@@ -143,24 +144,25 @@ describe('DelegationOracle', () => {
   });
 
   describe('hardcoded values with a proof', () => {
-    it('emits event if everythiong is valid', async () => {
-      const zkAppInstance = new DelegationOracle(zkAppAddress);
-      await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
-
+    it('emits event if everything is valid', async () => {
+      
       console.log("Compiling")
       await DelegationOracle.compile();
 
-      const epoch = UInt32.fromNumber(38);
+      const zkAppInstance = new DelegationOracle(zkAppAddress);
+      await localDeploy(zkAppInstance, zkAppPrivateKey, deployerAccount);
+
+      const epoch = UInt32.from(38);
       const publicKey = PublicKey.fromBase58("B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz");
       const producerKey = PublicKey.fromBase58("B62qpLST3UC1rpVT6SHfB7wqW2iQgiopFAGfrcovPgLjgfpDUN2LLeg");
-      const blocksWon = UInt32.fromNumber(9);
-      const delegatedBalance = UInt64.fromNumber(951659889077537);
-      const totalDelegatedBalance = UInt64.fromNumber(951659889077537);
-      const amountOwed = UInt64.fromNumber(6156000000000);
-      const amountSent = UInt64.fromNumber(17784000000000);
+      const blocksWon = UInt32.from(9);
+      const delegatedBalance = UInt64.from(951659889077537);
+      const totalDelegatedBalance = UInt64.from(951659889077537);
+      const amountOwed = UInt64.from(6156000000000);
+      const amountSent = UInt64.from(59120487400000);
       const signature = Signature.fromJSON({
-        r: '4585336111649222276312617544050671811572206187060030835626544623230564871660',
-        s: '23705120429500629446892768253494096656563972492453883998435780307943658192079'
+        r: '6748126514374051560245348427165654474450396230973498284112136428919612040590',
+        s: '8727899935074061901427059917125618805718425172046946859643762715642100796594'
       });
 
       const txn = await Mina.transaction(deployerAccount, () => {
@@ -177,7 +179,7 @@ describe('DelegationOracle', () => {
         );
       });
       await txn.prove();
-      await txn.send().wait();
+      await txn.send();
 
       const events = await zkAppInstance.fetchEvents();
       console.log(events);

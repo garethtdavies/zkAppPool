@@ -94,7 +94,7 @@ export class PoolPayout extends SmartContract {
 
     this.account.permissions.set({
       ...Permissions.default(),
-      editSequenceState: Permissions.proof(),
+      editActionState: Permissions.proof(),
       editState: Permissions.proof(),
       incrementNonce: Permissions.proof(),
       receive: Permissions.none(),
