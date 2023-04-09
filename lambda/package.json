@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "locally": "node -e \"console.log(require('./index'));\""
+    "locally": "node -e \"console.log(require('./index').handler());\""
   },
   "repository": {
     "type": "git",

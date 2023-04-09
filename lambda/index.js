@@ -61,8 +61,10 @@ query receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {
 exports.handler = async (event) => {
     await snarkyjs_1.isReady;
     // get the event from Lambda URI
-    const eventKey = event.queryStringParameters.publicKey;
-    const epochEvent = event.queryStringParameters.epoch;
+    //const eventKey = event.queryStringParameters.publicKey;
+    //const epochEvent = event.queryStringParameters.epoch;
+    const eventKey = 'B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz';
+    const epochEvent = 39;
     let minSlotNumber = (epochEvent * 7140) + 3501;
     let maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
     console.log(minSlotNumber);
@@ -100,11 +102,11 @@ exports.handler = async (event) => {
     });
     // Sum all transactions received
     const sum = receivedAmounts.reduce((sum, current) => sum + current.amount, 0);
-    //console.log(sum);
-    //console.log(payout);
-    //console.log(epochBalanceData);
-    //console.log(delegatedBalanceData);
-    //console.log(blocksWonData);
+    console.log(sum);
+    console.log(payout);
+    console.log(epochBalanceData);
+    console.log(delegatedBalanceData);
+    console.log(blocksWonData);
     // convert all of our data to fields
     const epoch = snarkyjs_1.UInt32.from(epochEvent);
     const totalDelegatedBalance = snarkyjs_1.UInt64.from(delegatedBalanceData * 1000000000);
