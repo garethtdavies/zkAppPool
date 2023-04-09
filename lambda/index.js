@@ -62,13 +62,13 @@ exports.handler = async (event) => {
     await snarkyjs_1.isReady;
     // get the event from Lambda URI
     const eventKey = event.queryStringParameters.publicKey;
-    const epochEvent = event.queryStringParameters.epoch;
+    const epochEvent = parseInt(event.queryStringParameters.epoch);
     //const eventKey = 'B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz';
-    //const epochEvent = 39;
+    //const epochEvent = parseInt('38');
     let minSlotNumber = (epochEvent * 7140) + 3501;
     let maxSlotNumber = ((epochEvent + 1) * 7140) + 3500;
-    console.log(minSlotNumber);
-    console.log(maxSlotNumber);
+    console.log(`Min slot number: ${minSlotNumber}`);
+    console.log(`Min slot number: ${maxSlotNumber}`);
     // TODO REPLACE THIS WITH OUR OWN KEY SERVER BY SECRET ENV
     const privateKey = snarkyjs_1.PrivateKey.fromBase58("EKF65JKw9Q1XWLDZyZNGysBbYG21QbJf3a4xnEoZPZ28LKYGMw53");
     // We compute the public key associated with our private key
