@@ -1,4 +1,4 @@
-// npm run build && node build/src/main.js 0 39 15
+// npm run build && node build/src/main.js 0 39 0
 // Arguments are index, nonce and feePayer nonce
 
 import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
@@ -51,7 +51,7 @@ switch (process.env.ENV) {
   );
   let feePayerPublicKey = feePayerPrivateKey.toPublicKey();
 
-  const zkAppAddress = PublicKey.fromBase58("B62qjDYmpLCaZ46SadRsCXLE8w5MWeePbju3xDt1zor1j8ZxZEZwbmE");
+  const zkAppAddress = PublicKey.fromBase58("B62qkV7eeqCLXtiWgmQaXdhRAqxkkfkCk1wXYHWisZ1MFwEAkajXHtk");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   const validatorPublicKey = PublicKey.fromBase58(poolPayoutConfig.validatorPublicKey);
