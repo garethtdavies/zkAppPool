@@ -51,7 +51,7 @@ switch (process.env.ENV) {
   );
   let feePayerPublicKey = feePayerPrivateKey.toPublicKey();
 
-  const zkAppAddress = PublicKey.fromBase58("B62qqMuBh7LTVKddw1o22wcoSAjAeBTf7Qhgb9hZHTWTSUVLi5bJ2fQ");
+  const zkAppAddress = PublicKey.fromBase58("B62qjDYmpLCaZ46SadRsCXLE8w5MWeePbju3xDt1zor1j8ZxZEZwbmE");
   const zkAppInstance = new PoolPayout(zkAppAddress);
 
   const validatorPublicKey = PublicKey.fromBase58(poolPayoutConfig.validatorPublicKey);
