@@ -2,7 +2,6 @@ import { DelegationOracle } from './DelegationOracleVerifier';
 import {
   isReady,
   shutdown,
-  Field,
   Mina,
   PrivateKey,
   PublicKey,
@@ -32,10 +31,8 @@ async function localDeploy(
   const txn = await Mina.transaction(deployerAccount, () => {
     AccountUpdate.fundNewAccount(deployerAccount);
     zkAppInstance.deploy({ zkappKey: zkAppPrivatekey });
-    zkAppInstance.init();
-    zkAppInstance.sign(zkAppPrivatekey);
   });
-  await txn.send();
+  await txn.sign([deployerAccount, zkAppPrivatekey]).send();
 }
 
 describe('DelegationOracle', () => {
@@ -95,9 +92,8 @@ describe('DelegationOracle', () => {
           amountSent,
           signature ?? fail('something is wrong with the signature')
         );
-        zkAppInstance.sign(zkAppPrivateKey);
       });
-      await txn.send();
+      await txn.sign([deployerAccount, zkAppPrivateKey]).send();
 
       // Test against these emitted after got it working
       const events = await zkAppInstance.fetchEvents();
@@ -134,12 +130,12 @@ describe('DelegationOracle', () => {
           amountSent,
           signature ?? fail('something is wrong with the signature')
         );
-        zkAppInstance.sign(zkAppPrivateKey);
       });
-      await txn.send();
+      await txn.sign([deployerAccount, zkAppPrivateKey]).send();
 
       // Test events after we have this working
       const events = await zkAppInstance.fetchEvents();
+      // console.log("events ", events);
     });
   });
 
@@ -179,10 +175,9 @@ describe('DelegationOracle', () => {
         );
       });
       await txn.prove();
-      await txn.send();
+      await txn.sign([deployerAccount, zkAppPrivateKey]).send();
 
-      const events = await zkAppInstance.fetchEvents();
-      console.log(events);
+      // const events = await zkAppInstance.fetchEvents();
     });
   });
 });

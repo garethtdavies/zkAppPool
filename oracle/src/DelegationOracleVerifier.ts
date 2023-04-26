@@ -1,7 +1,6 @@
 /* This smart contract takes in an oracle source */
 
 import {
-  Field,
   SmartContract,
   state,
   State,
@@ -46,7 +45,7 @@ export class DelegationOracle extends SmartContract {
     this.oraclePublicKey.assertEquals(oraclePublicKey);
 
     // Hack - need to understand why this doesn't work as is but works like this. Otherwise error is https://gist.github.com/garethtdavies/b5deadda86f1fd4a3b5b9efb13a0284e
-    oraclePublicKey = PublicKey.fromBase58("B62qphyUJg3TjMKi74T2rF8Yer5rQjBr1UyEG7Wg9XEYAHjaSiSqFv1");
+    oraclePublicKey = PublicKey.fromBase58(ORACLE_PUBLIC_KEY);
 
     // Evaluate whether the signature is valid for the provided data
     const signedData = epoch.toFields().concat(publicKey.toFields()).concat(producerKey.toFields()).concat(blocksWon.toFields()).concat(delegatedBalance.toFields()).concat(totalDelegatedBalance.toFields()).concat(amountOwed.toFields()).concat(amountSent.toFields());
