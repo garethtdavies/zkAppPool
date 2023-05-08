@@ -3,11 +3,9 @@
 // URL to run this is https://hdbuc4znywgfyvhdk7k42525ma0ykwsh.lambda-url.us-west-2.on.aws/
 
 import { format } from "path";
-import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64 } from "snarkyjs";
+import { PublicKey, PrivateKey, Field, Signature, UInt32, UInt64 } from "snarkyjs";
 
 exports.handler = async (event) => {
-
-  await isReady;
 
   type Data = {
     data: {

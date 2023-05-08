@@ -5,7 +5,7 @@
 // Can emit the public key, eppoch and whether or not enough payment was sent for the epoch determined by a zkApp
 // Invoke function https://xiyh2rxrqdnbv3jeaiscukkngi0rkili.lambda-url.us-west-2.on.aws/?publicKey=B62qpBVRzjqFcbzMk3JAFdjruMAoqdHyHiE9XNyshZ5NjGo2gY7CxZz&epoch=38
 
-import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64 } from "snarkyjs";
+import {PublicKey, PrivateKey, Field, Signature, UInt32, UInt64 } from "snarkyjs";
 import { request, gql } from 'graphql-request';
 
 // This query gets the delegation balance of the key in question
@@ -64,8 +64,6 @@ query receivedAmounts($pk: String!, $blockMin: Int!, $blockMax: Int!) {
 `
 
 exports.handler = async (event) => {
-
-  await isReady;
 
   // Define the type that our function (and API) will return
   type Data = {

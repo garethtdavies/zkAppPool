@@ -4,8 +4,6 @@
 import { FeePayout, PoolPayout, Reward, Rewards2 } from './PoolPayout.js';
 
 import {
-  isReady,
-  shutdown,
   Mina,
   PrivateKey,
   PublicKey,
@@ -33,8 +31,6 @@ switch (process.env.ENV) {
 }
 
 (async function main() {
-
-  await isReady;
 
   console.log('SnarkyJS loaded');
 
@@ -138,6 +134,4 @@ switch (process.env.ENV) {
 
   // ----------------------------------------------------
   console.log('Shutting down');
-
-  await shutdown();
 })();

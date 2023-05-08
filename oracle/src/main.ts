@@ -3,8 +3,6 @@
 import { DelegationOracle } from './DelegationOracleVerifier.js';
 
 import {
-  isReady,
-  shutdown,
   Mina,
   PrivateKey,
   PublicKey,
@@ -14,8 +12,6 @@ import {
 } from 'snarkyjs';
 
 (async function main() {
-
-  await isReady;
 
   console.log('SnarkyJS loaded');
 
@@ -105,5 +101,4 @@ import {
   // ----------------------------------------------------
   console.log('Shutting down');
 
-  await shutdown();
 })();

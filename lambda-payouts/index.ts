@@ -1,4 +1,4 @@
-import { isReady, PublicKey, PrivateKey, Field, Signature, UInt32, UInt64, Bool } from "snarkyjs";
+import { PublicKey, PrivateKey, Field, Signature, UInt32, UInt64, Bool } from "snarkyjs";
 import { request, gql } from 'graphql-request';
 
 // This query gets the blocks won in an epoch for a producer
@@ -59,8 +59,6 @@ query($delegate: String!, $epoch: Int!){
 `;
 
 exports.handler = async (event) => {
-
-  await isReady;
 
   // Define the type that our function (and API) will return
   type Data = {
